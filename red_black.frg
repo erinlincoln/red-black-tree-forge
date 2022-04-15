@@ -68,6 +68,18 @@ fun blackHeight[n: Node]: Int {
   }]
 }
 
+fun intermediateBlack[start: Node, end: Node]: Node {
+  { n: Node | {
+    n.color = Black
+    isChild[start, n]
+    isChild[n, end]
+  }}
+}
+
+fun blackDepth[n: Node]: Int {
+  #(intermediateBlack[Root, n])
+}
+
 // maximum difference in height between subtrees at same level within entire tree
 fun balancingFactor[n: Node]: Int {
   max[{ i: Int | (some p: Node | contains[n, p] and i = subtract[treeHeight[p.left], treeHeight[p.right]]) }]
@@ -145,7 +157,6 @@ pred wellformed_rb {
     // it is implied that if a Node has no left or right field then, that leaf
     // will be black
 }
-
 
 run { wellformed_rb} for exactly 5 Node
 
