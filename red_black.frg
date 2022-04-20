@@ -21,6 +21,11 @@ fun parent: set Node -> Node {
     { child, parent: Node | parent.left = child or parent.right = child }
 }
 
+// find 'uncle' of node
+fun uncle: set Node -> Node {
+  { child, uncle: Node | child.parent.parent.left = uncle or child.parent.parent.right = child}
+}
+
 // left/right contains parent-> child pair
 pred isChild[parent: Node, child: Node] {
     parent->child in ^(left + right)
@@ -156,6 +161,211 @@ pred wellformed_rb {
     // We do not include a constraint about the leaf nodes being black because
     // it is implied that if a Node has no left or right field then, that leaf
     // will be black
+}
+
+// HERE IS THE INITIAL WORK FOR INSERTION:
+// The basic idea is that the first transition is node_added where (hopefully)
+// nothing changes except that there is now a new node in the tree at the bottom,
+// such that it is still a binary tree. I'm not sure if this transition state needs
+// to be separated into the steps that it takes in order to add the node to the tree.
+
+// Then, the predicate insertion_rotation_recolor, performs the intermediary steps
+// where the node that was added, and the surrounding nodes, are rotated and recolored
+// based on how they are positioned in the tree.
+
+// The main thing that still remains (that I just breifly sketched out in the prediate
+// insertion) is the fact that these transition states happen for indeterminate amounts of
+// time until the wellformed_rb predicate is satisfied. One of the parts that I am most
+// challenged by for filling this out is the fact that the insertion_rotation_recolor
+// predicate will have to take in different nodes for n during each transition. The node
+// that it will have to take in can be found using the function next_node_to_restructure,
+// however, I still have not figured out how to put it all together
+
+pred node_added[n : Node] {
+
+    -- tree must be wellformed red-black before node is added
+    wellformed_rb
+
+    -- the resulting tree must still be a wellformed_tree
+    -- Is it okay that this is just automatically wellformed_binary??
+    wellformed_binary'
+
+    -- the added noded cannot be in the tree
+    n != Root
+    no n.parent
+    no n.left
+    no n.right
+  
+    -- the nodes remain the same (unless they have gained a child)
+    all n1 : Node | {
+      n1.value = n1.value'
+      some n1.left => n1.left = n1.left' else {
+        some n1.left' => n1.left = n
+      }
+      some n1.right => n1.right = n1.right' else {
+        some n1.right' => n1.right = n
+      }
+      n1.color = n1.color'
+    }
+
+    -- the inserted node should be red
+    n.color' = Red
+
+    -- DO WE NEED ANYTHING TO CHECK THAT THE NODE ISN'T ADDED IN IN MULTIPLE SPOTS?
+}
+
+fun next_node_to_restructure: set Node -> Node {
+    { prev, next : Node | prev.uncle.color = Red => next = prev.parent.parent else next = prev.parent }
+}
+
+pred insertion_rotation_recolor[n : Node] {
+
+    -- If n is the root, then it's color is simply changed to black (insertion is complete)
+    n = Root => n.color' = Black
+
+    -- If n is not the root and the parent is also Red, then rotation/recoloring must take place 
+    {
+        n != Root
+        n.parent.color = Red
+    } => {
+        n.uncle.color = Red => {
+            -- recolor the uncle, parent, and grandparent
+            n.parent.color' = Black
+            n.uncle.color' = Black
+            n.parent.parent.color' = Red
+
+            -- Need to swap n for n.parent.parent as n being inserted
+        } else {
+            -- Left Left case
+            n.parent.parent.left.left = n => {
+                n.parent.parent.left' = n.parent.right
+                n.parent.parent.right' = n.uncle
+
+                n.parent.left' = n
+                n.parent.right' = n.parent.parent
+                
+                n.uncle.left' = n.uncle.left
+                n.uncle.right' = n.uncle.right
+
+                n.left' = n.left
+                n.right' = n.right
+
+                n.parent.parent.color' = n.parent.color
+                n.parent.color' = n.parent.parent.color
+
+                n.color' = n.color
+                n.uncle.color' = n.uncle.color
+
+                -- DOES ANYTHING ELSE HAPPEN?
+            }
+            -- Left Right case
+            n.parent.parent.left.right = n => {
+                n.parent.parent.left' = n.right
+                n.parent.parent.right' = n.uncle
+
+                n.parent.left' = n.parent.left
+                n.parent.right' = n.left
+
+                n.uncle.left' = n.uncle.left
+                n.uncle.right' = n.uncle.right
+
+                n.left' = n.parent
+                n.right' = n.parent.parent
+
+                n.parent.parent.color' = n.color
+                n.color = n.parent.parent.color
+
+                n.parent.color' = n.parent.color
+                n.uncle.color' = n.uncle.color
+            }
+            -- Right Right case
+            n.parent.parent.right.right = n => {
+                n.parent.parent.left' = n.uncle
+                n.parent.parent.right' = n.parent.left
+
+                n.parent.left' = n.parent.parent
+                n.parent.right' = n
+
+                n.uncle.left' = n.uncle.left
+                n.uncle.right' = n.uncle.right
+
+                n.left' = n.left
+                n.right' = n.right
+
+                n.parent.parent.color' = n.parent.color
+                n.parent.color' = n.parent.parent.color
+
+                n.color' = n.color
+                n.uncle.color' = n.uncle.color
+            }
+            -- Right Left case
+            n.parent.parent.right.left = n => {
+                n.parent.parent.left' = n.uncle
+                n.parent.parent.right' = n.left
+
+                n.parent.left' = n.right
+                n.parent.right' = n.parent.right
+
+                n.uncle.left' = n.uncle.left
+                n.uncle.right' = n.uncle.right
+
+                n.left' = n.parent.parent
+                n.right' = n.parent
+
+                n.parent.parent.color' = n.color
+                n.color' = n.parent.parent.color
+
+                n.parent.color' = n.parent.color
+                n.uncle.color' = n.uncle.color
+            }
+            -- Needto swap n for n.parent as node being inserted
+        }
+    } else {
+      -- If no restructuring happens, n, the parent, uncle, and grandparent, must
+      -- all stay the same
+      n.parent.parent.left' = n.parent.parent.left
+      n.parent.parent.right' = n.parent.parent.right
+
+      n.parent.left' = n.parent.left
+      n.parent.right' = n.parent.right
+
+      n.uncle.left' = n.uncle.left
+      n.uncle.right' = n.uncle.right
+
+      n.left' = n.left
+      n.right' = n.right
+
+      n.parent.parent.color' = n.parent.parent.color
+      n.parent.color' = n.parent.color
+      n.uncle.color' = n.uncle.color
+      n.color' = n.color
+    }
+
+    -- Constrain all of the other nodes (not grandparent, parent, uncle, or n) to
+    -- remain the same
+    all n1 : Node | {
+        {
+            n1 != n.parent.parent
+            n1 != n.parent
+            n1 != n.uncle
+            n1 != n
+        } => {
+            n1.left' = n1.left
+            n1.right' = n1.right
+            n1.color' = n1.color
+        }
+        n1.value' = n1.value
+    }
+}
+
+pred insertion[n : Node] {
+
+    node_added[n]
+
+    -- Somehow need to be changing that n is no longer the same n
+    -- (can use the function next_node_to_restructure)
+    insertion_rotation_recolor[n] until wellformed_rb
+
 }
 
 run { wellformed_rb} for exactly 5 Node
