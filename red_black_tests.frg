@@ -102,7 +102,7 @@ example twoNodeTreeNodeAppearsTwice is not wellformed_rb for {
     right = `root -> `n1
     color = `root -> `black + `n1 -> `red
 }
-example threeNodeUnbalanced is not wellformed_rb for {
+example threeNodeUnbalancedWithRedLeaf is not wellformed_rb for {
     Root = `root
     Node = `root + `n1 + `n2
     Black = `black
@@ -114,6 +114,19 @@ example threeNodeUnbalanced is not wellformed_rb for {
     color = `root -> `black + `n1 -> `red
             + `n2 -> `red
 }
+example threeNodeUnbalancedWithBlackLeaf is not wellformed_rb for {
+    Root = `root
+    Node = `root + `n1 + `n2
+    Black = `black
+    Red = `red
+    Color = `black + `red
+    
+    value = `root -> 1 + `n1 -> 0 + `n2 -> 0
+    right = `root -> `n2 + `n2 -> `n1
+    color = `root -> `black + `n1 -> `red
+            + `n2 -> `black
+}
+
 example redAdjacent is not wellformed_rb for {
     Root = `root
     Node = `root + `n1 + `n2

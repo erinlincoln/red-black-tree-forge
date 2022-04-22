@@ -22,6 +22,14 @@ fun parent: set Node -> Node {
     { child, parent: Node | parent.left = child or parent.right = child }
 }
 
+fun immediateChildren: set Node -> Node {
+    left + right
+}
+
+fun children: set Node -> Node {
+    ^immediateChildren
+}
+
 // find 'uncle' of node
 fun uncle: set Node -> Node {
   { child, uncle: Node | child.parent.parent.left = uncle or child.parent.parent.right = child}
@@ -29,7 +37,7 @@ fun uncle: set Node -> Node {
 
 // left/right contains parent-> child pair
 pred isChild[parent: Node, child: Node] {
-    parent->child in ^(left + right)
+    child in parent.children
 }
 
 // parent and child are the same or are parent/child
@@ -37,9 +45,12 @@ pred contains[parent: Node, child: Node] {
     parent = child or isChild[parent, child]
 }
 
-// max of set
-fun max[i: Int]: Int {
-  { j: Int | j in i and (all k: i | k <= j) }
+pred inTree[n: Node] {
+    contains[Root, n]
+}
+
+fun treeNode: set Node {
+    { n: Node | inTree[n] }
 }
 
 // size of path from parent to child
@@ -62,28 +73,11 @@ fun treeHeight[n: Node]: Int {
   else max[{ i: Int | (some n1, n2: Node | contains[n, n1] and contains[n1, n2] and i = pathSize[n1, n2]) }]
 }
 
-// calculate the number of black nodes going through from node to end of tree
-fun blackHeight[n: Node]: Int {
-  no n => 0
-  else max[{ i: Int | {
-      some n1, n2: Node | {
-          contains[n, n1] and contains[n1, n2]
-          i = numBlack[n1, n2]
-        }
-      }
-  }]
-}
-
-fun intermediateBlack[start: Node, end: Node]: Node {
-  { n: Node | {
-    n.color = Black
-    isChild[start, n]
-    isChild[n, end]
-  }}
-}
-
 fun blackDepth[n: Node]: Int {
-  #(intermediateBlack[Root, n])
+  #({ intermediate: treeNode | {
+      intermediate.color = Black
+      contains[intermediate, n]
+  }})
 }
 
 // maximum difference in height between subtrees at same level within entire tree
@@ -143,20 +137,15 @@ pred wellformed_rb {
     Root.color = Black
 
     // No two adjacent red nodes
-    all n : Node | n.color = Red => {
-        some n.left => (n.left.color != Red)
-        some n.right => (n.right.color != Red)
+    all n : Node | (n.color = Red) => {
+        not (Red in n.immediateChildren.color)
     }
 
     // runtime??
     // Any path from node to Null goes through the same number of black nodes
-    all n: Node | (n in Root.^(left+right)) => {
-        some height: Int | {
-            all c: Node | {
-                (contains[n, c] and (no c.left or no c.right)) => {
-                    height = numBlack[n, c]
-                }
-            }
+    some depth: Int | {
+        all n: treeNode | (no n.left or no n.right) => {
+            depth = blackDepth[n]
         }
     }
         
