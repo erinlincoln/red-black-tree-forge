@@ -53,53 +53,13 @@ fun treeNode: set Node {
     { n: Node | inTree[n] }
 }
 
-// size of path from parent to child
-fun pathSize[parent: Node, child: Node]: Int {
-  // path from a node to itself is 0
-  (parent = child) => 0
-  else #{n: Node | isChild[parent, n] and contains[n, child]}
-}
-
-// number of black nodes between parent to child
-fun numBlack[parent: Node, child: Node]: Int {
-  // path from a node to itself is 0
-  (parent = child) => 0
-  else #{n: Node | isChild[parent, n] and contains[n, child] and n.color = Black }
-}
-
-// calculate height of tree from node
-fun treeHeight[n: Node]: Int {
-  no n => 0
-  else max[{ i: Int | (some n1, n2: Node | contains[n, n1] and contains[n1, n2] and i = pathSize[n1, n2]) }]
-}
-
-fun blackDepth[n: Node]: Int {
-  #({ intermediate: treeNode | {
-      intermediate.color = Black
-      contains[intermediate, n]
-  }})
-}
-
-// maximum difference in height between subtrees at same level within entire tree
-fun balancingFactor[n: Node]: Int {
-  max[{ i: Int | (some p: Node | contains[n, p] and i = subtract[treeHeight[p.left], treeHeight[p.right]]) }]
-}
-
-pred zeroOrOne[i: Int] { i = 1 or i = 0 }
-
-pred isBalanced {
-    zeroOrOne[balancingFactor[Root]]
-}
-
 // wellformed tree
 pred wellformed_tree {
-    // root reaches everything or it is not in the tree
-    all n: Node | {
-        n = Root or (Root -> n in ^(left + right)) or (no n.left and no n.right)
-    }
+    // Everything not in the tree is a lone node
+    all n: Node | not inTree[n] => (no n.left and no n.right)
     
     // not reachable from itself
-    all n : Node | n not in (n.^left + n.^right)
+    all n : Node | n not in n.children
     
     // left and right are different
     no left & right
@@ -114,22 +74,25 @@ pred wellformed_binary {
     // is a wellformed tree
     wellformed_tree
     
-    // left is less than parent, right is greater than parent
-    all n : Node | {
-        some n.left => {n.left.value < n.value}
-        some n.right => {n.right.value > n.value}
+    // Left is less than parent
+    // Right is greater than or equal to parent (allow duplicates on the right)
+    all p: treeNode | {
+        all c: (p.left + p.left.children) | c.value < p.value
+        all c: (p.right + p.right.children) | c.value >= p.value
     }
 }
 
-pred allEqual[values: Int] {
-    some i: Int | {
-        all v: values | i = v
-    }
+// Counts the number of black nodes, including this one,
+// between this node and the root
+fun blackDepth[n: Node]: Int {
+  #({ intermediate: treeNode | {
+      intermediate.color = Black
+      contains[intermediate, n]
+  }})
 }
 
 // wellformed red black tree
 pred wellformed_rb {
-    
     // red-black tree must be a wellformed binary search trees
     wellformed_binary
 
@@ -141,17 +104,18 @@ pred wellformed_rb {
         not (Red in n.immediateChildren.color)
     }
 
-    // runtime??
-    // Any path from node to Null goes through the same number of black nodes
+    // Any path from Root to a NIL goes through the same number of black nodes
+    // Since NILs are not explicitly in the graph, ensure that every node that has a NIL
+    // child is the same number of black nodes from Root, including itself if it is black.
+    // This is the same as counting the number of black nodes *between* the NIL and the root.
     some depth: Int | {
         all n: treeNode | (no n.left or no n.right) => {
             depth = blackDepth[n]
         }
     }
-        
+
     // We do not include a constraint about the leaf nodes being black because
-    // it is implied that if a Node has no left or right field then, that leaf
-    // will be black
+    // NIL leaves are implicitly treated as black
 }
 
 // HERE IS THE INITIAL WORK FOR INSERTION:
@@ -173,21 +137,16 @@ pred wellformed_rb {
 // however, I still have not figured out how to put it all together
 
 pred node_added[n : Node] {
+    // Tree is assumed to be wellformed BST before node is added
 
-    -- tree must be wellformed red-black before node is added
-    -- wellformed_rb
+    -- New node is not in the current tree
+    not (n in treeNode)
 
-    -- Not in the current tree
-    n != Root
-    no n.parent
+    -- New node is in the next state
+    n in treeNode'
 
-    -- In the tree in the next state
-    next_state {
-        -- the resulting tree must still be a wellformed_tree
-        -- Is it okay that this is just automatically wellformed_binary??
-        wellformed_binary
-        some n.parent
-    }
+    -- The next state is well-formed BST
+    next_state wellformed_binary
 
     some p: Node | {
         p = Root or some p.parent
