@@ -1,12 +1,13 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
+option problem_type temporal
 
 // Node of each graph - left branch, right branch, and color
 sig Node {
     value: one Int,
-    left: lone Node,
-    right: lone Node,
-    color: one Color
+    var left: lone Node,
+    var right: lone Node,
+    var color: one Color
 }
 
 // Root of tree (assuming no empty tree)
@@ -98,18 +99,20 @@ pred isBalanced {
 
 // wellformed tree
 pred wellformed_tree {
-    // root reaches everything
-    all n: Node | { n = Root or (Root -> n in ^(left + right)) }
+    // root reaches everything or it is not in the tree
+    all n: Node | {
+        n = Root or (Root -> n in ^(left + right)) or (no n.left and no n.right)
+    }
     
     // not reachable from itself
     all n : Node | n not in (n.^left + n.^right)
     
     // left and right are different
-    all n: Node | no (n.left & n.right)
+    no left & right
  
     // only one parent, root has no parent
-    all n: Node | (n = Root) => { no n.parent }
-        else { one n.parent }
+    no Root.parent
+    all n: Node | lone n.parent
 }
 
 // wellformed binary search tree
@@ -141,14 +144,13 @@ pred wellformed_rb {
 
     // No two adjacent red nodes
     all n : Node | n.color = Red => {
-        (n.parent.color != Red)
-        (n.left != Red)
-        (n.right != Red)
+        some n.left => (n.left.color != Red)
+        some n.right => (n.right.color != Red)
     }
 
     // runtime??
-    // Any path from node to Null goes through number of black nodes
-    all n: Node | {
+    // Any path from node to Null goes through the same number of black nodes
+    all n: Node | (n in Root.^(left+right)) => {
         some height: Int | {
             all c: Node | {
                 (contains[n, c] and (no c.left or no c.right)) => {
@@ -184,28 +186,26 @@ pred wellformed_rb {
 pred node_added[n : Node] {
 
     -- tree must be wellformed red-black before node is added
-    wellformed_rb
+    -- wellformed_rb
 
-    -- the resulting tree must still be a wellformed_tree
-    -- Is it okay that this is just automatically wellformed_binary??
-    wellformed_binary'
-
-    -- the added noded cannot be in the tree
+    -- Not in the current tree
     n != Root
     no n.parent
-    no n.left
-    no n.right
-  
-    -- the nodes remain the same (unless they have gained a child)
-    all n1 : Node | {
-      n1.value = n1.value'
-      some n1.left => n1.left = n1.left' else {
-        some n1.left' => n1.left = n
-      }
-      some n1.right => n1.right = n1.right' else {
-        some n1.right' => n1.right = n
-      }
-      n1.color = n1.color'
+
+    -- In the tree in the next state
+    next_state {
+        -- the resulting tree must still be a wellformed_tree
+        -- Is it okay that this is just automatically wellformed_binary??
+        wellformed_binary
+        some n.parent
+    }
+
+    some p: Node | {
+        p = Root or some p.parent
+        n.parent' = p
+
+        (left' = left + p -> n and right' = right) or (right' = right + p -> n and left' = left)
+        color' = color
     }
 
     -- the inserted node should be red
@@ -358,15 +358,62 @@ pred insertion_rotation_recolor[n : Node] {
     }
 }
 
+// get next node that is violating wellformed
+fun nextInsertNode: Node {
+    {Root.color = Red} => {Root}
+    else {n : Node | n.parent.color = Red and n.color = Red}
+}
+
 pred insertion[n : Node] {
 
     node_added[n]
 
     -- Somehow need to be changing that n is no longer the same n
     -- (can use the function next_node_to_restructure)
-    insertion_rotation_recolor[n] until wellformed_rb
+    insertion_rotation_recolor[nextInsertNode] until wellformed_rb
 
 }
 
-run { wellformed_rb} for exactly 5 Node
 
+pred terminate_transition {
+    no nextInsertNode
+    
+    Node' = Node
+    left' = left
+    right' = right
+    value' = value
+    color' = color
+}
+
+pred rotate_transition {
+    // implies that tree isn't wellformed
+
+    // TODO: Test that we only have one of these at any given time
+    some nextInsertNode
+
+    insertion_rotation_recolor[nextInsertNode]
+}
+
+pred insert_transition {
+    no nextInsertNode
+
+    Node in Node'
+    some n: Node | {
+        node_added[n]
+    }
+}
+
+pred traces {
+    wellformed_rb
+    --insert_transition
+
+    insert_transition
+    next_state rotate_transition
+
+    always {
+        insert_transition or rotate_transition or terminate_transition
+        //rotate_transition or terminate_transition
+    }
+}
+
+run { traces } for 7 Node

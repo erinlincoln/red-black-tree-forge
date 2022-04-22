@@ -116,17 +116,16 @@ example threeNodeUnbalanced is not wellformed_rb for {
 }
 example redAdjacent is not wellformed_rb for {
     Root = `root
-    Node = `root + `n1 + `n2 + `n3 + `n4
+    Node = `root + `n1 + `n2
     Black = `black
     Red = `red
     Color = `black + `red
     
-    value = `root -> 1 + `n1 -> 0 + `n2 -> 0 +
-            `n3 -> 2 + `n3 -> 2
+    value = `root -> 1 + `n1 -> 0 + `n2 -> 0
     right = `root -> `n2 + `n2 -> `n1
     no left
     color = `root -> `black + `n1 -> `red
-            + `n2 -> `red    
+            + `n2 -> `red
 }
 example threeNodeUnbalancedAllBlack is not wellformed_rb for {
     Root = `root
@@ -212,4 +211,10 @@ test expect {
       Red in Node.color
       Black in Node.color
     } for exactly 2 Node is sat
+
+    // PROPERTY TESTS
+    // some nextInsertNode implies tree is not wellformed
+    nextInsertImpliesWellformed: {
+        some nextInsertNode => not wellformed_rb
+    } is sat
 }
