@@ -184,6 +184,8 @@ pred insert[n : Node] {
 }
 
 pred recolorEnabled[n: Node] {
+    n.color = Red
+    n.grandparent.color = Black
     n.parent.color = Red
     n.uncle.color = Red
 }
@@ -194,15 +196,13 @@ pred recolor[n: Node] {
     root' = root
     left' = left
     right' = right
-    value' = value
 
-    -- Only allow color to change in these three nodes
-    -- Cardinality of both sets is the same, so can just check set diff
-    (color' - color).Color in (n.grandparent + n.parent + n.uncle)
-
-    n.grandparent.color' = Red
-    n.parent.color' = Black
-    n.uncle.color = Black
+    let g = n.grandparent, p = n.parent, u = n.uncle | {
+        color' = (color - ((g + p + u) -> Color)) +
+            g -> Red +
+            p -> Black +
+            u -> Black
+    }
 }
 
 pred rotateEnabled[n: Node] {
