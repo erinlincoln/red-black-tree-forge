@@ -2,6 +2,10 @@
 
 open "red_black.frg"
 
+// Use a trace length of 2, which is enough to prove properties by induction
+// Put longer tests in another file
+option max_tracelength 2
+
 // example sat red-black trees
 example oneNodeTree is wellformed_rb for {
     Root = `root
@@ -280,6 +284,20 @@ test expect {
       Red in Node.color
       Black in Node.color
     } for exactly 2 Node is sat
+
+    uncleTest: {
+        wellformed_tree => {
+            all n: Node | {
+                n.uncle in n.parent.parent.immediateChildren
+                lone n.uncle
+                some n.parent => n.uncle != n.parent
+            }
+        }
+    } is theorem
+
+    insertPreservesWellformedBST: {
+        (wellformed_binary and (some n: Node | insert[n])) => next_state wellformed_binary
+    } for exactly 4 Node is theorem
 
     // PROPERTY TESTS
     // some nextInsertNode implies tree is not wellformed

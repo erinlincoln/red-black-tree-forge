@@ -4,7 +4,7 @@ option problem_type temporal
 
 // Node of each graph - left branch, right branch, and color
 sig Node {
-    value: one Int,
+    var value: one Int,
     var left: lone Node,
     var right: lone Node,
     var color: one Color
@@ -17,13 +17,17 @@ one sig Root extends Node {}
 abstract sig Color {}
 one sig Black, Red extends Color {}
 
-// find parent of node
-fun parent: set Node -> Node {
-    { child, parent: Node | parent.left = child or parent.right = child }
-}
-
 fun immediateChildren: set Node -> Node {
     left + right
+}
+
+// Parent is the transpose of immediateChildren
+fun parent: set Node -> Node {
+    ~immediateChildren
+}
+
+fun grandparent: set Node -> Node {
+    parent.parent
 }
 
 fun children: set Node -> Node {
@@ -32,7 +36,7 @@ fun children: set Node -> Node {
 
 // find 'uncle' of node
 fun uncle: set Node -> Node {
-  { child, uncle: Node | child.parent.parent.left = uncle or child.parent.parent.right = child}
+    grandparent.immediateChildren - parent
 }
 
 // left/right contains parent-> child pair
@@ -136,7 +140,7 @@ pred wellformed_rb {
 // that it will have to take in can be found using the function next_node_to_restructure,
 // however, I still have not figured out how to put it all together
 
-pred node_added[n : Node] {
+pred insert[n : Node] {
     // Tree is assumed to be wellformed BST before node is added
 
     -- New node is not in the current tree
@@ -145,164 +149,172 @@ pred node_added[n : Node] {
     -- New node is in the next state
     n in treeNode'
 
-    -- The next state is well-formed BST
-    next_state wellformed_binary
+    value' = value
 
-    some p: Node | {
-        p = Root or some p.parent
-        n.parent' = p
+    -- All colors stay the same except
+    -- the new node is red
+    color' = (color - (n -> Color)) + n -> Red
 
-        (left' = left + p -> n and right' = right) or (right' = right + p -> n and left' = left)
-        color' = color
+    next_state {
+        all p: treeNode | {
+            (n in p.left.children) => n.value < p.value
+            (n in p.right.children) => n.value >= p.value
+        }
     }
 
-    -- the inserted node should be red
-    n.color' = Red
-
-    -- DO WE NEED ANYTHING TO CHECK THAT THE NODE ISN'T ADDED IN IN MULTIPLE SPOTS?
+    some p: treeNode | {
+        {
+            n.value < p.value
+            left' = left + p -> n
+            right' = right
+        } or {
+            n.value >= p.value
+            right' = right + p -> n
+            left' = left
+        }
+    }
 }
 
 fun next_node_to_restructure: set Node -> Node {
     { prev, next : Node | prev.uncle.color = Red => next = prev.parent.parent else next = prev.parent }
 }
 
-pred insertion_rotation_recolor[n : Node] {
+pred recolorEnabled[n: Node] {
+    n.parent.color = Red
+    n.uncle = Red
+}
 
-    -- If n is the root, then it's color is simply changed to black (insertion is complete)
-    n = Root => n.color' = Black
+pred recolor[n: Node] {
+    recolorEnabled[n]
 
+    left' = left
+    right' = right
+    value' = value
+
+    -- Only allow color to change in these three nodes
+    -- Cardinality of both sets is the same, so can just check set diff
+    (color' - color).Color in (n.grandparent + n.parent + n.uncle)
+
+    n.grandparent.color' = Red
+    n.parent.color' = Black
+    n.uncle.color = Black
+}
+
+pred rotateEnabled[n: Node] {
+    -- We are not modeling insertion into an empty tree, so the root always stays the same
+    -- If n's parent is black, there is no fixing required, so therefore no rotation happens
     -- If n is not the root and the parent is also Red, then rotation/recoloring must take place 
-    {
-        n != Root
-        n.parent.color = Red
-    } => {
-        n.uncle.color = Red => {
-            -- recolor the uncle, parent, and grandparent
-            n.parent.color' = Black
-            n.uncle.color' = Black
-            n.parent.parent.color' = Red
+    n.parent.color = Red
 
-            -- Need to swap n for n.parent.parent as n being inserted
-        } else {
-            -- Left Left case
-            n.parent.parent.left.left = n => {
-                n.parent.parent.left' = n.parent.right
-                n.parent.parent.right' = n.uncle
+    -- Uncle is either missing or is Black (otherwise only recoloring is needed)
+    no n.uncle or n.uncle.color = Black
+}
 
-                n.parent.left' = n
-                n.parent.right' = n.parent.parent
-                
-                n.uncle.left' = n.uncle.left
-                n.uncle.right' = n.uncle.right
+pred rotate[n : Node] {
+    rotateEnabled[n]
 
-                n.left' = n.left
-                n.right' = n.right
-
-                n.parent.parent.color' = n.parent.color
-                n.parent.color' = n.parent.parent.color
-
-                n.color' = n.color
-                n.uncle.color' = n.uncle.color
-
-                -- DOES ANYTHING ELSE HAPPEN?
-            }
-            -- Left Right case
-            n.parent.parent.left.right = n => {
-                n.parent.parent.left' = n.right
-                n.parent.parent.right' = n.uncle
-
-                n.parent.left' = n.parent.left
-                n.parent.right' = n.left
-
-                n.uncle.left' = n.uncle.left
-                n.uncle.right' = n.uncle.right
-
-                n.left' = n.parent
-                n.right' = n.parent.parent
-
-                n.parent.parent.color' = n.color
-                n.color = n.parent.parent.color
-
-                n.parent.color' = n.parent.color
-                n.uncle.color' = n.uncle.color
-            }
-            -- Right Right case
-            n.parent.parent.right.right = n => {
-                n.parent.parent.left' = n.uncle
-                n.parent.parent.right' = n.parent.left
-
-                n.parent.left' = n.parent.parent
-                n.parent.right' = n
-
-                n.uncle.left' = n.uncle.left
-                n.uncle.right' = n.uncle.right
-
-                n.left' = n.left
-                n.right' = n.right
-
-                n.parent.parent.color' = n.parent.color
-                n.parent.color' = n.parent.parent.color
-
-                n.color' = n.color
-                n.uncle.color' = n.uncle.color
-            }
-            -- Right Left case
-            n.parent.parent.right.left = n => {
-                n.parent.parent.left' = n.uncle
-                n.parent.parent.right' = n.left
-
-                n.parent.left' = n.right
-                n.parent.right' = n.parent.right
-
-                n.uncle.left' = n.uncle.left
-                n.uncle.right' = n.uncle.right
-
-                n.left' = n.parent.parent
-                n.right' = n.parent
-
-                n.parent.parent.color' = n.color
-                n.color' = n.parent.parent.color
-
-                n.parent.color' = n.parent.color
-                n.uncle.color' = n.uncle.color
-            }
-            -- Needto swap n for n.parent as node being inserted
+    -- Since parent is red, and n is red, the coloring is violated
+    -- Grandparent will always exist since a red node (the parent) cannot be root
+    -- Grandparent must always be black, since parent is red
+    -- Uncle may be missing
+    
+    let p = n.parent, g = n.grandparent, u = n.uncle | {
+        -- Let everything else stay the same
+        -- Uncle does not change in this case
+        all o: Node | (o not in (n + p + g)) => {
+            o.left' = o.left
+            o.right' = o.right
+            o.value' = o.value
+            o.color' = o.color
         }
-    } else {
-      -- If no restructuring happens, n, the parent, uncle, and grandparent, must
-      -- all stay the same
-      n.parent.parent.left' = n.parent.parent.left
-      n.parent.parent.right' = n.parent.parent.right
 
-      n.parent.left' = n.parent.left
-      n.parent.right' = n.parent.right
+        -- Left Left case
+        (g.left.left = n) => {
+            -- Replace grandparent with parent
+            -- This mutates the value because we cannot change the Root
+            -- node reference, and grandparent could be the root
+            g.value' = p.value
+            g.left' = n
+            g.right' = p
+            g.color' = Black
 
-      n.uncle.left' = n.uncle.left
-      n.uncle.right' = n.uncle.right
+            -- Replace parent with grandparent, using the same technique
+            p.value' = g.value
+            p.left' = p.right
+            p.right' = u
+            p.color' = Red
 
-      n.left' = n.left
-      n.right' = n.right
-
-      n.parent.parent.color' = n.parent.parent.color
-      n.parent.color' = n.parent.color
-      n.uncle.color' = n.uncle.color
-      n.color' = n.color
-    }
-
-    -- Constrain all of the other nodes (not grandparent, parent, uncle, or n) to
-    -- remain the same
-    all n1 : Node | {
-        {
-            n1 != n.parent.parent
-            n1 != n.parent
-            n1 != n.uncle
-            n1 != n
-        } => {
-            n1.left' = n1.left
-            n1.right' = n1.right
-            n1.color' = n1.color
+            -- n does not change
+            n.value' = n.value
+            n.left' = n.left
+            n.right' = n.right
+            n.color' = n.color
         }
-        n1.value' = n1.value
+
+        -- Left Right case
+        (g.left.right = n) => {
+            -- Replace the grandparent with n (see left-left case)
+            g.value' = n.value
+            g.left' = p
+            g.right' = n
+            g.color' = Black
+
+            -- Replace n with the grandparent
+            n.value' = g.value
+            n.left' = n.right -- Is this right?
+            n.right' = u
+            n.color' = Red
+
+            -- Parent stays in place
+            p.value' = p.value
+            p.left' = p.left
+            p.right' = n.left -- Is this right?
+            p.color' = Red
+        }
+
+        -- Right Right case
+        (g.right.right = n) => {
+            -- Replace grandparent with parent (see first case)
+            g.value' = p.value
+            g.left' = p
+            g.right' = n
+            g.color' = Black
+
+            -- Replace parent with grandparent, using the same technique
+            p.value' = g.value
+            p.left' = u
+            p.right' = p.right
+            p.color' = Red
+
+            -- n does not change
+            n.value' = n.value
+            n.left' = n.left
+            n.right' = n.right
+            n.color' = n.color
+        }
+
+        -- Right Left case
+        n.parent.parent.right.left = n => {
+            -- Replace the grandparent with n (see first case)
+            g.value' = n.value
+            g.left' = n
+            g.right' = p
+            g.color' = Black
+
+            -- Replace n with the grandparent
+            n.value' = g.value
+            n.left' = u
+            n.right' = n.left -- Is this right?
+            n.color' = Red
+
+            -- Parent stays in place
+            p.value' = p.value
+            p.left' = n.right -- Is this right?
+            p.right' = p.right
+            p.color' = Red
+        }
+
+        -- Needto swap n for n.parent as node being inserted
     }
 }
 
@@ -312,21 +324,10 @@ fun nextInsertNode: Node {
     else {n : Node | n.parent.color = Red and n.color = Red}
 }
 
-pred insertion[n : Node] {
-
-    node_added[n]
-
-    -- Somehow need to be changing that n is no longer the same n
-    -- (can use the function next_node_to_restructure)
-    insertion_rotation_recolor[nextInsertNode] until wellformed_rb
-
-}
-
-
 pred terminate_transition {
+    // Don't terminate until done inserting
     no nextInsertNode
-    
-    Node' = Node
+
     left' = left
     right' = right
     value' = value
@@ -335,33 +336,36 @@ pred terminate_transition {
 
 pred rotate_transition {
     // implies that tree isn't wellformed
-
     // TODO: Test that we only have one of these at any given time
     some nextInsertNode
+    rotate[nextInsertNode]
+}
 
-    insertion_rotation_recolor[nextInsertNode]
+pred recolor_transition {
+    some nextInsertNode
+    recolor[nextInsertNode]
 }
 
 pred insert_transition {
+    -- Don't insert until the previous insert is cleaned up
     no nextInsertNode
-
-    Node in Node'
-    some n: Node | {
-        node_added[n]
-    }
+    some n: Node | insert[n]
 }
 
 pred traces {
     wellformed_rb
-    --insert_transition
 
     insert_transition
     next_state rotate_transition
 
     always {
-        insert_transition or rotate_transition or terminate_transition
-        //rotate_transition or terminate_transition
+        (
+            insert_transition or
+            rotate_transition or
+            recolor_transition or
+            terminate_transition
+        )
     }
 }
 
-run { traces } for 7 Node
+run { traces } for exactly 6 Node
