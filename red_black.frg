@@ -2,20 +2,26 @@
 
 option problem_type temporal
 
-// Node of each graph - left branch, right branch, and color
+// Node of each graph - left branch, right branch, value, and color
 sig Node {
-    var value: one Int,
+    value: one Int,
     var left: lone Node,
     var right: lone Node,
     var color: one Color
 }
 
-// Root of tree (assuming no empty tree)
-one sig Root extends Node {}
+one sig Tree {
+    var rootNode: lone Node
+}
 
 // Color of nodes
 abstract sig Color {}
 one sig Black, Red extends Color {}
+
+// Helper to avoid more typing
+fun root: lone Node {
+    Tree.rootNode
+}
 
 fun immediateChildren: set Node -> Node {
     left + right
@@ -30,37 +36,30 @@ fun grandparent: set Node -> Node {
     parent.parent
 }
 
+// Children is *all* children in a node's subtree
 fun children: set Node -> Node {
     ^immediateChildren
 }
 
-// find 'uncle' of node
+// The sibling of a node's parent
 fun uncle: set Node -> Node {
+    // Include both of the grandparent's immediate children, but remove the parent,
+    // thus there is at most a single uncle for every node
     grandparent.immediateChildren - parent
 }
 
-// left/right contains parent-> child pair
-pred isChild[parent: Node, child: Node] {
-    child in parent.children
-}
-
-// parent and child are the same or are parent/child
-pred contains[parent: Node, child: Node] {
-    parent = child or isChild[parent, child]
-}
-
 pred inTree[n: Node] {
-    contains[Root, n]
+    n in treeNode
 }
 
 fun treeNode: set Node {
-    { n: Node | inTree[n] }
+    root + root.children
 }
 
 // wellformed tree
 pred wellformed_tree {
     // Everything not in the tree is a lone node
-    all n: Node | not inTree[n] => (no n.left and no n.right)
+    all n: Node - treeNode | no n.left and no n.right
     
     // not reachable from itself
     all n : Node | n not in n.children
@@ -69,7 +68,7 @@ pred wellformed_tree {
     no left & right
  
     // only one parent, root has no parent
-    no Root.parent
+    no root.parent
     all n: Node | lone n.parent
 }
 
@@ -91,7 +90,7 @@ pred wellformed_binary {
 fun blackDepth[n: Node]: Int {
   #({ intermediate: treeNode | {
       intermediate.color = Black
-      contains[intermediate, n]
+      n in (intermediate + intermediate.children)
   }})
 }
 
@@ -100,12 +99,12 @@ pred wellformed_rb {
     // red-black tree must be a wellformed binary search trees
     wellformed_binary
 
-    // Root is always black
-    Root.color = Black
+    // Root, if it exists, is always black
+    root.color in Black
 
     // No two adjacent red nodes
-    all n : Node | (n.color = Red) => {
-        not (Red in n.immediateChildren.color)
+    all n : treeNode | (n.color = Red) => {
+        Red not in n.immediateChildren.color
     }
 
     // Any path from Root to a NIL goes through the same number of black nodes
@@ -149,8 +148,6 @@ pred insert[n : Node] {
     -- New node is in the next state
     n in treeNode'
 
-    value' = value
-
     -- All colors stay the same except
     -- the new node is red
     color' = (color - (n -> Color)) + n -> Red
@@ -162,31 +159,39 @@ pred insert[n : Node] {
         }
     }
 
-    some p: treeNode | {
-        {
-            n.value < p.value
-            left' = left + p -> n
-            right' = right
-        } or {
-            n.value >= p.value
-            right' = right + p -> n
-            left' = left
+    (no root) => {
+        // Insertion into an empty tree
+        root' = n
+        no left'
+        no right'
+    } else {
+        root' = root
+
+        // Insertion into an existing tree
+        // Find the correct parent node
+        some p: treeNode | {
+            {
+                n.value < p.value
+                left' = left + p -> n
+                right' = right
+            } or {
+                n.value >= p.value
+                right' = right + p -> n
+                left' = left
+            }
         }
     }
 }
 
-fun next_node_to_restructure: set Node -> Node {
-    { prev, next : Node | prev.uncle.color = Red => next = prev.parent.parent else next = prev.parent }
-}
-
 pred recolorEnabled[n: Node] {
     n.parent.color = Red
-    n.uncle = Red
+    n.uncle.color = Red
 }
 
 pred recolor[n: Node] {
     recolorEnabled[n]
 
+    root' = root
     left' = left
     right' = right
     value' = value
@@ -212,6 +217,8 @@ pred rotateEnabled[n: Node] {
 
 pred rotate[n : Node] {
     rotateEnabled[n]
+
+    root' = root
 
     -- Since parent is red, and n is red, the coloring is violated
     -- Grandparent will always exist since a red node (the parent) cannot be root
@@ -318,10 +325,10 @@ pred rotate[n : Node] {
     }
 }
 
-// get next node that is violating wellformed
-fun nextInsertNode: Node {
-    {Root.color = Red} => {Root}
-    else {n : Node | n.parent.color = Red and n.color = Red}
+// Get next node that is violating wellformed
+fun nextInsertNode: lone Node {
+    {root.color = Red} => root
+    else { n : Node | n.parent.color = Red and n.color = Red }
 }
 
 pred terminate_transition {
