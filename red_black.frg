@@ -206,7 +206,9 @@ pred recolor[n: Node] {
 }
 
 pred rotateEnabled[n: Node] {
-    -- We are not modeling insertion into an empty tree, so the root always stays the same
+    n.color = Red
+    some n.grandparent
+
     -- If n's parent is black, there is no fixing required, so therefore no rotation happens
     -- If n is not the root and the parent is also Red, then rotation/recoloring must take place 
     n.parent.color = Red
@@ -215,44 +217,54 @@ pred rotateEnabled[n: Node] {
     no n.uncle or n.uncle.color = Black
 }
 
+pred replaceGrandparent[prev: Node, next: Node] {
+    (prev = root) => {
+        root' = next
+    } else {
+        root' = root
+
+        prev.parent.color' = prev.parent.color
+
+        (some prev.~left) => {
+            prev.parent.left' = next
+            prev.parent.right' = prev.parent.right
+        } else {
+            prev.parent.right' = next
+            prev.parent.left' = prev.parent.left
+        }
+    }
+}
+
 pred rotate[n : Node] {
     rotateEnabled[n]
 
-    root' = root
-
     -- Since parent is red, and n is red, the coloring is violated
-    -- Grandparent will always exist since a red node (the parent) cannot be root
     -- Grandparent must always be black, since parent is red
     -- Uncle may be missing
     
     let p = n.parent, g = n.grandparent, u = n.uncle | {
         -- Let everything else stay the same
         -- Uncle does not change in this case
-        all o: Node | (o not in (n + p + g)) => {
+        all o: Node | (o not in (n + p + g + g.parent)) => {
             o.left' = o.left
             o.right' = o.right
-            o.value' = o.value
             o.color' = o.color
         }
 
         -- Left Left case
         (g.left.left = n) => {
             -- Replace grandparent with parent
-            -- This mutates the value because we cannot change the Root
-            -- node reference, and grandparent could be the root
-            g.value' = p.value
-            g.left' = n
-            g.right' = p
-            g.color' = Black
+            replaceGrandparent[g, p]
 
-            -- Replace parent with grandparent, using the same technique
-            p.value' = g.value
-            p.left' = p.right
-            p.right' = u
-            p.color' = Red
+            p.left' = n
+            p.right' = g
+            p.color' = Black
 
-            -- n does not change
-            n.value' = n.value
+            g.left' = p.right
+            g.right' = u
+            g.color' = Red
+
+            // n does not change
             n.left' = n.left
             n.right' = n.right
             n.color' = n.color
@@ -260,65 +272,55 @@ pred rotate[n : Node] {
 
         -- Left Right case
         (g.left.right = n) => {
-            -- Replace the grandparent with n (see left-left case)
-            g.value' = n.value
-            g.left' = p
-            g.right' = n
-            g.color' = Black
+            -- Replace the grandparent with n
+            replaceGrandparent[g, n]
 
-            -- Replace n with the grandparent
-            n.value' = g.value
-            n.left' = n.right -- Is this right?
-            n.right' = u
-            n.color' = Red
+            n.left' = p
+            n.right' = g
+            n.color' = Black
 
-            -- Parent stays in place
-            p.value' = p.value
             p.left' = p.left
-            p.right' = n.left -- Is this right?
+            p.right' = n.left
             p.color' = Red
+
+            g.left' = n.right
+            g.right' = u
+            g.color' = Red
         }
 
         -- Right Right case
         (g.right.right = n) => {
-            -- Replace grandparent with parent (see first case)
-            g.value' = p.value
-            g.left' = p
-            g.right' = n
-            g.color' = Black
+            -- Replace grandparent with parent
+            replaceGrandparent[g, p]
 
-            -- Replace parent with grandparent, using the same technique
-            p.value' = g.value
-            p.left' = u
-            p.right' = p.right
-            p.color' = Red
+            p.left' = g
+            p.right' = n
+            p.color' = Black
 
-            -- n does not change
-            n.value' = n.value
+            g.left' = u
+            g.right' = p.left
+            g.color' = Red
+
             n.left' = n.left
             n.right' = n.right
             n.color' = n.color
         }
 
         -- Right Left case
-        n.parent.parent.right.left = n => {
-            -- Replace the grandparent with n (see first case)
-            g.value' = n.value
-            g.left' = n
-            g.right' = p
-            g.color' = Black
+        (g.right.left = n) => {
+            replaceGrandparent[g, n]
 
-            -- Replace n with the grandparent
-            n.value' = g.value
-            n.left' = u
-            n.right' = n.left -- Is this right?
-            n.color' = Red
+            n.left' = g
+            n.right' = p
+            n.color' = Black
 
-            -- Parent stays in place
-            p.value' = p.value
-            p.left' = n.right -- Is this right?
+            g.left' = u
+            g.right' = n.left
+            g.color' = Red
+
+            p.left' = n.right
             p.right' = p.right
-            p.color' = Red
+            p.color' = p.color
         }
 
         -- Needto swap n for n.parent as node being inserted
