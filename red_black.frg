@@ -78,9 +78,9 @@ pred wellformed_binary {
     wellformed_tree
     
     // Left is less than parent
-    // Right is greater than or equal to parent (allow duplicates on the right)
+    // Right is greater than or equal to parent (allow duplicates on either side OR NO DUPLICATES??)
     all p: treeNode | {
-        all c: (p.left + p.left.children) | c.value < p.value
+        all c: (p.left + p.left.children) | c.value <= p.value
         all c: (p.right + p.right.children) | c.value >= p.value
     }
 }
@@ -154,7 +154,7 @@ pred insert[n : Node] {
 
     next_state {
         all p: treeNode | {
-            (n in p.left.children) => n.value < p.value
+            (n in p.left.children) => n.value <= p.value
             (n in p.right.children) => n.value >= p.value
         }
     }
@@ -171,7 +171,7 @@ pred insert[n : Node] {
         // Find the correct parent node
         some p: treeNode | {
             {
-                n.value < p.value
+                n.value <= p.value
                 left' = left + p -> n
                 right' = right
             } or {
@@ -341,6 +341,7 @@ pred terminate_transition {
     right' = right
     value' = value
     color' = color
+    rootNode' = rootNode
 }
 
 pred rotate_transition {
@@ -364,8 +365,8 @@ pred insert_transition {
 pred traces {
     wellformed_rb
 
-    insert_transition
-    next_state rotate_transition
+    // insert_transition
+    // next_state rotate_transition
 
     always {
         (

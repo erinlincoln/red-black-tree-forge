@@ -295,13 +295,13 @@ test expect {
 
     // all left nodes are less than right nodes
     leftLessThanRightTest: { wellformed_binary => {
-        all n: Node | {some n.left and some n.right} => {n.left.value < n.right.value}
+        all n: Node | {some n.left and some n.right} => {n.left.value <= n.right.value}
     } } is theorem
 
-    // Every node in a left sub-tree has value < parent, and opposite for right
+    // Every node in a left sub-tree has value <= parent, and opposite for right
     sortedTree: { wellformed_binary => {
         all p: Node | {
-            all l: (p.left + p.left.children) | l.value < p.value
+            all l: (p.left + p.left.children) | l.value <= p.value
             all r: (p.right + p.right.children) | r.value >= p.value
         }
     } } is theorem
@@ -347,5 +347,42 @@ test expect {
     // some nextInsertNode implies tree is not wellformed
     nextInsertImpliesWellformed: {
         some nextInsertNode => not wellformed_rb
+    } is theorem
+
+    // rotate or recolor implies tree is not wellformed
+    rotateOrRecolorImpliesNotWellformed: {
+        {
+            traces and 
+            (rotate_transition or recolor_transition)
+        } => not wellformed_rb
+    } is theorem
+
+    // terminate transition implies tree is wellformed
+    terminateTransitionImpliesWellformed: {
+        {
+            traces
+            terminate_transition
+        } => wellformed_rb
+    } is theorem
+
+    // eventually wellformed after insert
+    eventuallyWellformedAfterInsert: {
+        {
+            traces
+            insert_transition
+        } => eventually wellformed_rb
+    } is theorem
+
+    // binary tree always maintained
+    alwaysBinaryWellformed: {
+        traces implies always wellformed_binary
+    } is theorem
+
+    // there is always a root node
+    alwaysRootNode: {
+        {
+            traces
+            always some (left + right)
+        } => always some rootNode
     } is theorem
 }
