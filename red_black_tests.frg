@@ -361,7 +361,7 @@ test expect {
     terminateTransitionImpliesWellformed: {
         {
             traces
-            terminate_transition
+            always terminate_transition
         } => wellformed_rb
     } is theorem
 
