@@ -275,6 +275,12 @@ pred sameBlackDepth {
     }
 }
 
+fun log[nodes: set Node] : Int {
+    let count = #{n : Node | n in nodes} | {
+        
+    }
+}
+
 // All nodes in a left subtree 
 
 test expect {
