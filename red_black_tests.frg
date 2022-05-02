@@ -365,12 +365,12 @@ test expect {
         } => wellformed_rb
     } is theorem
 
-    // eventually wellformed after insert
+    // eventually wellformed_rb after insert
     eventuallyWellformedAfterInsert: {
-        {
+        always ({
             traces
             insert_transition
-        } => eventually wellformed_rb
+        } => eventually wellformed_rb)
     } is theorem
 
     // binary tree always maintained

@@ -50,6 +50,8 @@ First, we were able to check that following the insertion algorithm (starting wi
 
 Another property of insertion that we were able to test is that a binary tree is maintained throughout the enter insertion process.
 
+OTHER PROPERTIES???
+
 RUNTIME PROPERTIES???
 
 ## Tradeoffs made
@@ -61,5 +63,7 @@ One of the major assumptions we made in the design of our model is that if a nod
 ## Model Limits
 
 ## Adjustments from Proposal
+
+Our model pretty accurately encompasses what we set out to do in our proposal.
 
 ## Understanding Output/Visualization
