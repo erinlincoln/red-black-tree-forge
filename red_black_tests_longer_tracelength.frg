@@ -6,6 +6,7 @@ option max_tracelength 5
 
 test expect {
     // PROPERTY TESTS
+
     // some nextInsertNode implies tree is not wellformed
     nextInsertImpliesWellformed: {
         some nextInsertNode => not wellformed_rb
@@ -38,11 +39,12 @@ test expect {
 
     canInsertWithoutRecolorOrRotate: {
         traces
+
         some Tree.rootNode
-        eventually insert_transition
-        always {
-            not rotate_transition
-            not recolor_transition
-        }
-    } is sat
+        some Tree.rootNode.left
+        some Tree.rootNode.right
+
+        insert_transition
+        next_state terminate_transition
+    } for exactly 4 Node is sat
 }
