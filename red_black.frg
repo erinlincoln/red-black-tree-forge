@@ -9,17 +9,9 @@ sig Node {
     var right: lone Node,
     var color: one Color,
 
-    var type: one Type
-    var null: one Null
+    var type: one Type,
+    var nullNode: one NullNode
 }
-
-abstract sig Type {}
-one sig Single extends Type {}
-one sig DoubleBlack extends Node {}
-
-abstract sig Null {}
-one sig IsNull extends Null {}
-one sig NotNull extends Null {}
 
 one sig Tree {
     var rootNode: lone Node
@@ -28,6 +20,12 @@ one sig Tree {
 // Color of nodes
 abstract sig Color {}
 one sig Black, Red extends Color {}
+
+abstract sig Type {}
+one sig Single, DoubleBlack extends Type {}
+
+abstract sig NullNode {}
+one sig IsNull, NotNull extends NullNode {}
 
 // Helper to avoid more typing
 fun root: lone Node {
@@ -48,29 +46,30 @@ fun grandparent: set Node -> Node {
 }
 
 fun sibling: set Node -> Node {
-    some n : Node | {
-        n.parent.imediateChildren - n
+    { n, sib : Node | {
+        sib != n
+        sib in n.parent.immediateChildren}
     }
 }
 
 fun farNephew: set Node -> Node {
-    some n : Node | {
+    { n, nephew : Node | {
         n.parent.left = n => {
-            n.sibling.right
+            n.sibling.right = nephew
         } else {
-            n.sibling.left
+            n.sibling.left = nephew
         }
-    }
+    }}
 }
 
 fun nearNephew: set Node -> Node {
-    some n : Node | {
+    { n, nephew : Node | {
         n.parent.left = n => {
-            n.sibling.left
+            n.sibling.left = nephew
         } else {
-            n.sibling.right
+            n.sibling.right = nephew
         }
-    }
+    }}
 }
 
 // Children is *all* children in a node's subtree
@@ -159,13 +158,13 @@ pred wellformed_rb {
     -- included for delete:
     all n : treeNode | {
         n.type = Single
-        n.null = NotNull
+        n.nullNode = NotNull
     }
 }
 
 // Algorithms
 fun inorderSuccessor: set Node -> Node {
-    some n, succ : Node | succ in n.right.^left and no succ.left
+    { n, succ : Node | succ in n.right.^left and no succ.left }
 }
 
 pred delete[n : Node] {
@@ -195,6 +194,8 @@ pred delete[n : Node] {
         } else {
             some db : Node | {
                 db.type = DoubleBlack
+                db.color = Black
+                db.nullNode = IsNull
                 db not in treeNode
 
                 n = root => {
@@ -205,30 +206,37 @@ pred delete[n : Node] {
                 }
             }
         }
+        n.inorderSuccessor.left' = n.inorderSuccessor.left
+        n.inorderSuccessor.right' = n.inorderSuccessor.right
+        n.inorderSuccessor.color' = n.inorderSuccessor.color
+
+        n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+        n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+        n.inorderSuccessor.parent.color' = n.inorderSuccessor.parent.color
     }
 
     -- the node has one child
     no n.left and some n.right => {
         replaceGrandparent[n, n.right]
 
-        n.inorderSuccessor.left' = n.inorderSuccesor.left
-        n.inorderSuccessor.right' = n.inorderSuccesor.right
-        n.inorderSuccessor.color' = n.inorderSuccesor.color
+        n.inorderSuccessor.left' = n.inorderSuccessor.left
+        n.inorderSuccessor.right' = n.inorderSuccessor.right
+        n.inorderSuccessor.color' = n.inorderSuccessor.color
 
-        n.inorderSuccessor.parent.left' = n.inorderSuccesor.parent.left
-        n.inorderSuccessor.parent.right' = n.inorderSuccesor.parent.right
-        n.inorderSuccessor.parent.color' = n.inorderSuccesor.parent.color
+        n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+        n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+        n.inorderSuccessor.parent.color' = n.inorderSuccessor.parent.color
     }
     no n.right and some n.left => {
         replaceGrandparent[n, n.left]
 
-        n.inorderSuccessor.left' = n.inorderSuccesor.left
-        n.inorderSuccessor.right' = n.inorderSuccesor.right
-        n.inorderSuccessor.color' = n.inorderSuccesor.color
+        n.inorderSuccessor.left' = n.inorderSuccessor.left
+        n.inorderSuccessor.right' = n.inorderSuccessor.right
+        n.inorderSuccessor.color' = n.inorderSuccessor.color
 
-        n.inorderSuccessor.parent.left' = n.inorderSuccesor.parent.left
-        n.inorderSuccessor.parent.right' = n.inorderSuccesor.parent.right
-        n.inorderSuccessor.parent.color' = n.inorderSuccesor.parent.color
+        n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+        n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+        n.inorderSuccessor.parent.color' = n.inorderSuccessor.parent.color
     }
 
     -- the node has two children
@@ -250,16 +258,14 @@ pred delete[n : Node] {
     }
 
     all o : Node | (o not in (n + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
-        o.left' = o.left'
+        o.left' = o.left
         o.right' = o.right
         o.color' = o.color
     }
 
     -- Type and Null stay the same
     type' = type
-    null' = null
-    n.type' = n.type
-    n.null' = n.null
+    nullNode' = nullNode
 }
 
 pred removeDB[db: Node] {
@@ -268,11 +274,31 @@ pred removeDB[db: Node] {
     no db.parent'
 }
 
-pred recolorDeleteEnabled {
-    some db : Node | {
-        db.type = DoubleBlack
-        db in treeNode
+fun dbNode: lone Node {
+    { n : Node | n.type = DoubleBlack }
+}
+
+
+pred replaceGrandparent[prev: Node, next: Node] {
+    (prev = root) => {
+        root' = next
+    } else {
+        root' = root
+
+        prev.parent.color' = prev.parent.color
+
+        (some prev.~left) => {
+            prev.parent.left' = next
+            prev.parent.right' = prev.parent.right
+        } else {
+            prev.parent.right' = next
+            prev.parent.left' = prev.parent.left
+        }
     }
+}
+
+pred recolorDeleteEnabled {
+    some dbNode
 }
 
 -- Cases are numbered using the table from: https://medium.com/analytics-vidhya/deletion-in-red-black-rb-tree-92301e1474ea
@@ -280,67 +306,71 @@ pred recolorDelete {
     -- happens when there is still a double black in the tree
     recolorDeleteEnabled
 
-    all o : Node | (o not in (db + db.parent + db.sibling + db.farNephew + db.nearNephew)) => {
-        o.left' = o.left
-        o.right' = o.right
-        o.color' = o.color
-        o.type' = o.type
-        o.null' = o.null
-    }
-
     -- Case 2: Node is root
-    db = root => {
-        -- Remove DoubleBlack sign
-        db.type' = Single
-        db.null' = NotNull
+    let db = dbNode, sib = dbNode.sibling | {
+        all o : Node | (o not in (db + db.parent + db.sibling + db.farNephew + db.nearNephew)) => {
+            o.left' = o.left
+            o.right' = o.right
+            o.color' = o.color
+            o.type' = o.type
+            o.nullNode' = o.nullNode
+        }
+        db = root => {
+            db.nullNode = NotNull => {
+                -- Remove DoubleBlack sign
+                db.type' = Single
+                db.nullNode' = NotNull
+            } else {
+                removeDB[db]
+                no root'
+            }
 
-        -- Things that stay the same:
-        db.left' = db.left
-        db.right' = db.right
-        db.color' = db.color
+            -- Things that stay the same:
+            db.left' = db.left
+            db.right' = db.right
+            db.color' = db.color
 
-        sib.left' = sib.left
-        sib.right' = sib.right
-        sib.color' = sib.color
-        sib.type' = sib.type
-        sib.null' = sib.null
+            sib.left' = sib.left
+            sib.right' = sib.right
+            sib.color' = sib.color
+            sib.type' = sib.type
+            sib.nullNode' = sib.nullNode
 
-        db.parent.left' = db.parent.left
-        db.parent.right' = db.parent.right
-        db.parent.color' = db.parent.color
-        db.parent.type' = db.parent.type
-        db.parent.null' = db.parent.null
+            db.parent.left' = db.parent.left
+            db.parent.right' = db.parent.right
+            db.parent.color' = db.parent.color
+            db.parent.type' = db.parent.type
+            db.parent.nullNode' = db.parent.nullNode
 
-        db.farNephew.left' = db.farNephew.left
-        db.farNephew.right' = db.farNephew.right
-        db.farNephew.color' = db.farNephew.color
-        db.farNephew.type' = db.farNephew.type
-        db.farNephew.null' = db.farNephew.null
+            db.farNephew.left' = db.farNephew.left
+            db.farNephew.right' = db.farNephew.right
+            db.farNephew.color' = db.farNephew.color
+            db.farNephew.type' = db.farNephew.type
+            db.farNephew.nullNode' = db.farNephew.nullNode
 
-        db.nearNephew.left' = db.nearNephew.left
-        db.nearNephew.right' = db.nearNephew.right
-        db.nearNephew.color' = db.nearNephew.color
-        db.nearNephew.type' = db.nearNephew.type
-        db.nearNephew.null' = db.nearNephew.null
-    } else {
-        let sib = db.sibling | {
+            db.nearNephew.left' = db.nearNephew.left
+            db.nearNephew.right' = db.nearNephew.right
+            db.nearNephew.color' = db.nearNephew.color
+            db.nearNephew.type' = db.nearNephew.type
+            db.nearNephew.nullNode' = db.nearNephew.nullNode
+        } else {
 
             -- Case 3: sibling is black and the children are black
             -- also the case where there is no sibling
             {
                 (sib.color = Black and 
-                sib.left.color = Black and
-                sib.right.color = Black)
+                (sib.left.color = Black or no sib.left) and
+                (sib.right.color = Black or no sib.right))
                 or 
                 no sib
             } => {
 
                 -- if null, remove from tree, else remove db sign
-                db.null = IsNull => {
+                db.nullNode = IsNull => {
                     removeDB[db]
                 } else {
                     db.type' = Single
-                    db.null' = NotNull
+                    db.nullNode' = NotNull
                 }
 
                 -- change sibs color to red
@@ -348,44 +378,47 @@ pred recolorDelete {
 
                 -- if DBs parent is black, set it to double black,
                 -- otherwise make parent black
-                db.parent.color = Black {
+                db.parent.color = Black => {
                     db.parent.type' = DoubleBlack
-                    db.parent.null' = NotNull
+                    db.parent.nullNode' = NotNull
 
                     db.parent.color' = db.parent.color
                 } else {
                     db.parent.color' = Black
 
                     db.parent.type' = db.parent.type
-                    db.parent.null' = db.parent.null
+                    db.parent.nullNode' = db.parent.nullNode
                 }
 
                 -- Things that stay the same:
                 sib.left' = sib.left
                 sib.right' = sib.right
                 sib.type' = sib.type
-                sib.null' = sib.null
+                sib.nullNode' = sib.nullNode
 
                 db.parent.left' = db.parent.left
                 db.parent.right' = db.parent.right
                 db.parent.type' = db.parent.type
-                db.parent.null' = db.parent.null
+                db.parent.nullNode' = db.parent.nullNode
 
                 db.farNephew.left' = db.farNephew.left
                 db.farNephew.right' = db.farNephew.right
                 db.farNephew.color' = db.farNephew.color
                 db.farNephew.type' = db.farNephew.type
-                db.farNephew.null' = db.farNephew.null
+                db.farNephew.nullNode' = db.farNephew.nullNode
 
                 db.nearNephew.left' = db.nearNephew.left
                 db.nearNephew.right' = db.nearNephew.right
                 db.nearNephew.color' = db.nearNephew.color
                 db.nearNephew.type' = db.nearNephew.type
-                db.nearNephew.null' = db.nearNephew.null
+                db.nearNephew.nullNode' = db.nearNephew.nullNode
             }
 
             -- Case 4: the sibling is red
-            sib.color = Red => {
+            {
+                some sib
+                sib.color = Red
+            } => {
                 -- Swap color of DBs parent with DBs sib
                 db.parent.color' = sib.color
                 sib.color' = db.parent.color
@@ -414,29 +447,30 @@ pred recolorDelete {
                 db.right' = db.right
                 db.color' = db.color
                 db.type' = db.type
-                db.null' = db.null
+                db.nullNode' = db.nullNode
 
                 db.parent.type' = db.parent.type
-                db.parent.null' = db.parent.null
+                db.parent.nullNode' = db.parent.nullNode
 
                 db.farNephew.left' = db.farNephew.left
                 db.farNephew.right' = db.farNephew.right
                 db.farNephew.color' = db.farNephew.color
                 db.farNephew.type' = db.farNephew.type
-                db.farNephew.null' = db.farNephew.null
+                db.farNephew.nullNode' = db.farNephew.nullNode
 
                 db.nearNephew.left' = db.nearNephew.left
                 db.nearNephew.right' = db.nearNephew.right
                 db.nearNephew.color' = db.nearNephew.color
                 db.nearNephew.type' = db.nearNephew.type
-                db.nearNephew.null' = db.nearNephew.null
+                db.nearNephew.nullNode' = db.nearNephew.nullNode
 
                 sib.type' = sib.type
-                sib.null' = sib.null
+                sib.nullNode' = sib.nullNode
             }
 
             -- Case 5: sibling is black, near sibling child is red
             {
+                some sib
                 sib.color = Black
                 db.farNephew.color = Black
                 db.nearNephew.color = Red
@@ -477,27 +511,28 @@ pred recolorDelete {
                 db.right' = db.right
                 db.color' = db.color
                 db.type' = db.type
-                db.null' = db.null
+                db.nullNode' = db.nullNode
 
                 db.parent.left' = db.parent.left
                 db.parent.right' = db.parent.right
                 db.parent.color' = db.parent.color
                 db.parent.type' = db.parent.type
-                db.parent.null' = db.parent.null
+                db.parent.nullNode' = db.parent.nullNode
 
                 db.farNephew.color' = db.farNephew.color
                 db.farNephew.type' = db.farNephew.type
-                db.farNephew.null' = db.farNephew.null
+                db.farNephew.nullNode' = db.farNephew.nullNode
 
                 db.nearNephew.type' = db.nearNephew.type
-                db.nearNephew.null' = db.nearNephew.null
+                db.nearNephew.nullNode' = db.nearNephew.nullNode
 
                 sib.type' = sib.type
-                sib.null' = sib.null
+                sib.nullNode' = sib.nullNode
             }
 
             -- Case 6: sibling is black, far child is red
             {
+                some sib
                 sib.color = Black
                 db.farNephew.color = Red
             } => {
@@ -526,11 +561,11 @@ pred recolorDelete {
 
                 -- If DB is null, remove from tree, otherwise
                 -- remove DB sign and make black
-                db.null = IsNull => {
+                db.nullNode = IsNull => {
                     removeDB[db]
                 } else {
                     db.type' = Single
-                    db.null' = NotNull
+                    db.nullNode' = NotNull
                     db.color' = Black
                 }
 
@@ -542,21 +577,21 @@ pred recolorDelete {
                 db.right' = db.right
 
                 db.parent.type' = db.parent.type
-                db.parent.null' = db.parent.null
+                db.parent.nullNode' = db.parent.nullNode
 
                 db.farNephew.left' = db.farNephew.left
                 db.farNephew.right' = db.farNephew.right
                 db.farNephew.type' = db.farNephew.type
-                db.farNephew.null' = db.farNephew.null
+                db.farNephew.nullNode' = db.farNephew.nullNode
 
                 db.nearNephew.left' = db.nearNephew.left
                 db.nearNephew.right' = db.nearNephew.right
                 db.nearNephew.color' = db.nearNephew.color
                 db.nearNephew.type' = db.nearNephew.type
-                db.nearNephew.null' = db.nearNephew.null
+                db.nearNephew.nullNode' = db.nearNephew.nullNode
 
                 sib.type' = sib.type
-                sib.null' = sib.null
+                sib.nullNode' = sib.nullNode
             }
         }
     }
@@ -574,6 +609,10 @@ pred insert[n : Node] {
     -- All colors stay the same except
     -- the new node is red
     color' = (color - (n -> Color)) + n -> Red
+
+    -- type and null stays the same
+    type' = type
+    nullNode' = nullNode
 
     next_state {
         all p: treeNode | {
@@ -622,6 +661,9 @@ pred recolor[n: Node] {
     left' = left
     right' = right
 
+    type' = type
+    nullNode' = nullNode
+
     let g = n.grandparent, p = n.parent, u = n.uncle | {
         color' = (color - ((g + p + u) -> Color)) +
             g -> Red +
@@ -642,30 +684,15 @@ pred rotateEnabled[n: Node] {
     no n.uncle or n.uncle.color = Black
 }
 
-pred replaceGrandparent[prev: Node, next: Node] {
-    (prev = root) => {
-        root' = next
-    } else {
-        root' = root
-
-        prev.parent.color' = prev.parent.color
-
-        (some prev.~left) => {
-            prev.parent.left' = next
-            prev.parent.right' = prev.parent.right
-        } else {
-            prev.parent.right' = next
-            prev.parent.left' = prev.parent.left
-        }
-    }
-}
-
 pred rotate[n : Node] {
     rotateEnabled[n]
 
     -- Since parent is red, and n is red, the coloring is violated
     -- Grandparent must always be black, since parent is red
     -- Uncle may be missing
+
+    type' = type
+    nullNode' = nullNode
     
     let p = n.parent, g = n.grandparent, u = n.uncle | {
         -- Let everything else stay the same
@@ -674,18 +701,7 @@ pred rotate[n : Node] {
             o.left' = o.left
             o.right' = o.right
             o.color' = o.color
-            o.type' = o.type
-            o.null' = o.null
         }
-
-        n.type' = n.type
-        n.null' = n.null
-        p.type' = p.type
-        p.null' = p.null
-        g.type' = g.type
-        g.null' = g.null
-        g.parent.type' = g.parent.type
-        g.parent.null' = g.parent.null
 
         -- Left Left case
         (g.left.left = n) => {
@@ -776,6 +792,9 @@ pred terminate_transition {
     value' = value
     color' = color
     rootNode' = rootNode
+
+    type' = type
+    nullNode' = nullNode
 }
 
 pred rotate_transition {
@@ -799,20 +818,29 @@ pred insert_transition {
 pred delete_transition {
     -- Don't delete if node is being inserted
     no nextInsertNode
-    some n" Node | delete[n]
+    some n: Node | delete[n]
+}
+
+pred delete_recolor_transition {
+    no nextInsertNode
+    recolorDelete
 }
 
 pred traces {
     wellformed_rb
 
+    #treeNode >= 2
     // insert_transition
-    // next_state rotate_transition
+    delete_transition
+    next_state delete_recolor_transition
 
     always {
         (
             insert_transition or
             rotate_transition or
             recolor_transition or
+            delete_transition or
+            delete_recolor_transition or
             terminate_transition
         )
     }

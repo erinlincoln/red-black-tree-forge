@@ -11,6 +11,14 @@ inst baseInst {
     Black = `black
     Red = `red
     Color = Black + Red
+
+    Single = `single
+    DoubleBlack = `DoubleBlack
+    Type = Single + DoubleBlack
+
+    IsNull = `isnull
+    NotNull = `notnull
+    NullNode = IsNull + NotNull
 }
 
 inst singleRootInst {
