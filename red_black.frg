@@ -887,8 +887,8 @@ pred traces {
             insert_transition or
             rotate_transition or
             recolor_transition or
-            // delete_transition or
-            // delete_recolor_transition or
+            delete_transition or
+            delete_recolor_transition or
             terminate_transition
         )
     }
