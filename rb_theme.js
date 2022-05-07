@@ -80,7 +80,18 @@ function instanceToTree(inst) {
     });
     const types = Object.assign({}, ...type.map((x) => ({ [x.n]: x.t })));
 
-    return [nodes, root, left, right, colors, values, types];
+    // get if null
+    const ntuples = inst.field('nullNode').tuples();
+    const nullNode = ntuples.map(tuple => {
+        const atoms = tuple.atoms();
+        return {
+            n: atoms[0].id(),
+            i: atoms[1].id()
+        }
+    })
+    const nullNodes = Object.assign({}, ...nullNode.map((x) => ({ [x.n]: x.i })));
+
+    return [nodes, root, left, right, colors, values, types, nullNodes];
 }
 
 function setNodeXY(root, left, right, inst) {
@@ -170,7 +181,7 @@ function parent(node, left, right) {
 }
 
 function graph(inst) {
-    var [inodes, iroot, ileft, iright, icolors, ivalues, itypes] = instanceToTree(inst);
+    var [inodes, iroot, ileft, iright, icolors, ivalues, itypes, inulls] = instanceToTree(inst);
     var [ix, iy, inode] = setNodeXY(iroot, ileft, iright, inst);
 
     d3.select(svg)
@@ -218,7 +229,7 @@ function graph(inst) {
                 return RED;
             }
             if (itypes[d] == "DoubleBlack0") {
-                return "#00FF00";;
+                return "#5484E3";
             }
             if (icolors[d] == "Black0") {
                 return BLACK;
@@ -226,6 +237,7 @@ function graph(inst) {
         });
     d3.select(svg)
         .selectAll("values")
+        .data(inode)
         .join("text")
         .attr("x", (d, i) => {
             return ix.get(d) - 5;
@@ -234,6 +246,9 @@ function graph(inst) {
             return iy.get(d) + 5;
         })
         .text((d, i) => {
+            if (inulls[d] == "IsNull0" && itypes[d] == "DoubleBlack0") {
+                return "N";
+            }
             return ivalues[d];
         })
         .attr("fill", "#ffffff");

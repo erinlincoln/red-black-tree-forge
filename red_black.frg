@@ -115,8 +115,8 @@ pred wellformed_binary {
     
     // Left is less than parent and right is greater than the parent
     all p: treeNode | {
-        all c: (p.left + p.left.children) | c.value < p.value
-        all c: (p.right + p.right.children) | c.value > p.value
+        all c: (p.left + p.left.children) | c.type != DoubleBlack => c.value < p.value
+        all c: (p.right + p.right.children) | c.type != DoubleBlack =>  c.value > p.value
     }
 }
 
@@ -156,9 +156,8 @@ pred wellformed_rb {
     // NIL leaves are implicitly treated as black
 
     -- included for delete:
-    all n : treeNode | {
+    all n : treeNode | n in treeNode => {
         n.type = Single
-        n.nullNode = NotNull
     }
 }
 
@@ -183,6 +182,9 @@ pred delete[n : Node] {
     no n.left'
     no n.right'
 
+    -- FOR TESTING
+    // some n.left and some n.right and n.color = Black
+
     -- the node is a leaf
     no n.left and no n.right => {
         n.color = Red => {
@@ -190,6 +192,14 @@ pred delete[n : Node] {
                 no root' 
             } else {
                 root' = root
+
+                n.parent.left = n => {
+                    no n.parent.left'
+                    n.parent.right' = n.parent.right
+                } else {
+                    no n.parent.right'
+                    n.parent.left' = n.parent.left
+                }
             }
         } else {
             some db : Node | {
@@ -197,6 +207,7 @@ pred delete[n : Node] {
                 db.color = Black
                 db.nullNode = IsNull
                 db not in treeNode
+                db.value = n.value
 
                 n = root => {
                     root' = db
@@ -239,7 +250,7 @@ pred delete[n : Node] {
         n.inorderSuccessor.parent.color' = n.inorderSuccessor.parent.color
     }
 
-    -- the node has two children
+    // -- the node has two children
     some n.left and some n.right => {
         replaceGrandparent[n, n.inorderSuccessor]
 
@@ -250,14 +261,34 @@ pred delete[n : Node] {
         n.color = Black => {
             some db : Node | {
                 db.type = DoubleBlack
+                db.nullNode = IsNull
                 db not in treeNode
 
-                replaceGrandparent[n.inorderSuccessor, db]
+                no db.left'
+                no db.right'
+
+                n.inorderSuccessor.parent.left = n.inorderSuccessor => {
+                    n.inorderSuccessor.parent.left' = db
+                    n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+                } else {
+                    n.inorderSuccessor.parent.right' = db
+                    n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+                }
+            }
+        } else {
+            n.inorderSuccessor.parent.left = n.inorderSuccessor => {
+                no n.inorderSuccessor.parent.left'
+                n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+            } else {
+                no n.inorderSuccessor.parent.right'
+                n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
             }
         }
+        n.inorderSuccessor.parent.color' = n.inorderSuccessor.parent.color
     }
 
-    all o : Node | (o not in (n + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
+    // all o : Node | (o not in (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
+    all o : Node | (o not in (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
         o.left' = o.left
         o.right' = o.right
         o.color' = o.color
@@ -275,7 +306,7 @@ pred removeDB[db: Node] {
 }
 
 fun dbNode: lone Node {
-    { n : Node | n.type = DoubleBlack }
+    { n : Node | n.type = DoubleBlack and n in treeNode }
 }
 
 
@@ -320,6 +351,7 @@ pred recolorDelete {
                 -- Remove DoubleBlack sign
                 db.type' = Single
                 db.nullNode' = NotNull
+                root' = root
             } else {
                 removeDB[db]
                 no root'
@@ -365,12 +397,27 @@ pred recolorDelete {
                 no sib
             } => {
 
+                root' = root
+
                 -- if null, remove from tree, else remove db sign
                 db.nullNode = IsNull => {
                     removeDB[db]
+                    db.parent.left = db => {
+                        no db.parent.left'
+                        db.parent.right' = db.parent.right
+                    } else {
+                        no db.parent.right'
+                        db.parent.left' = db.parent.left
+                    }
                 } else {
                     db.type' = Single
                     db.nullNode' = NotNull
+                    db.left' = db.left
+                    db.right' = db.right
+                    db.color' = db.color
+
+                    db.parent.left' = db.parent.left
+                    db.parent.right' = db.parent.right
                 }
 
                 -- change sibs color to red
@@ -396,8 +443,8 @@ pred recolorDelete {
                 sib.type' = sib.type
                 sib.nullNode' = sib.nullNode
 
-                db.parent.left' = db.parent.left
-                db.parent.right' = db.parent.right
+                // db.parent.left' = db.parent.left
+                // db.parent.right' = db.parent.right
                 db.parent.type' = db.parent.type
                 db.parent.nullNode' = db.parent.nullNode
 
@@ -472,7 +519,7 @@ pred recolorDelete {
             {
                 some sib
                 sib.color = Black
-                db.farNephew.color = Black
+                (db.farNephew.color = Black or no db.farNephew)
                 db.nearNephew.color = Red
             } => {
                 -- Swap color of sibling with siblings red child
@@ -786,6 +833,7 @@ fun nextInsertNode: lone Node {
 pred terminate_transition {
     // Don't terminate until done inserting
     no nextInsertNode
+    no dbNode
 
     left' = left
     right' = right
@@ -829,21 +877,23 @@ pred delete_recolor_transition {
 pred traces {
     wellformed_rb
 
-    #treeNode >= 2
+    // #treeNode >= 2
     // insert_transition
-    delete_transition
-    next_state delete_recolor_transition
+    // delete_transition
+    // next_state delete_recolor_transition
 
     always {
         (
             insert_transition or
             rotate_transition or
             recolor_transition or
-            delete_transition or
-            delete_recolor_transition or
+            // delete_transition or
+            // delete_recolor_transition or
             terminate_transition
         )
     }
 }
 
-run { traces } for exactly 6 Node
+// run { traces } for exactly 6 Node
+run { traces 
+not always (terminate_transition => wellformed_rb)} for exactly 6 Node
