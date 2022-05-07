@@ -174,9 +174,6 @@ pred delete[n : Node] {
     -- Node not in next state
     not (n in treeNode')
 
-    -- The color should stay the same
-    color' = color
-
     -- remove the node from the tree
     no n.parent'
     no n.left'
@@ -230,6 +227,14 @@ pred delete[n : Node] {
     no n.left and some n.right => {
         replaceGrandparent[n, n.right]
 
+        n.color = Black and n.right.color = Black => {
+            n.right.type' = DoubleBlack
+            n.right.nullNode' = NotNull
+            n.right.color' = Black
+        } else {
+            n.right.color' = Black
+        }
+
         n.inorderSuccessor.left' = n.inorderSuccessor.left
         n.inorderSuccessor.right' = n.inorderSuccessor.right
         n.inorderSuccessor.color' = n.inorderSuccessor.color
@@ -240,6 +245,12 @@ pred delete[n : Node] {
     }
     no n.right and some n.left => {
         replaceGrandparent[n, n.left]
+
+        n.color = Black and n.left.color = Black => {
+            n.left.type' = DoubleBlack
+            n.left.nullNode' = NotNull
+        }
+        n.left.color' = Black
 
         n.inorderSuccessor.left' = n.inorderSuccessor.left
         n.inorderSuccessor.right' = n.inorderSuccessor.right
@@ -257,6 +268,13 @@ pred delete[n : Node] {
         n.inorderSuccessor.left' = n.left
         n.inorderSuccessor.right' = n.right
         n.inorderSuccessor.color' = n.color
+
+        n.left != n.inorderSuccessor => {
+            n.left.color' = n.left.color
+        }
+        n.right != n.inorderSuccessor => {
+            n.right.color' = n.right.color
+        }
 
         n.color = Black => {
             some db : Node | {
@@ -291,8 +309,10 @@ pred delete[n : Node] {
     all o : Node | (o not in (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
         o.left' = o.left
         o.right' = o.right
-        o.color' = o.color
     }
+
+    -- Color stays the same except the left and right
+    color' = color - (n.left -> Color + n.right -> Color)
 
     -- Type and Null stay the same
     type' = type
@@ -877,10 +897,10 @@ pred delete_recolor_transition {
 pred traces {
     wellformed_rb
 
-    // #treeNode >= 2
+    #treeNode >= 2
     // insert_transition
-    // delete_transition
-    // next_state delete_recolor_transition
+    delete_transition
+    next_state delete_recolor_transition
 
     always {
         (
@@ -895,5 +915,7 @@ pred traces {
 }
 
 // run { traces } for exactly 6 Node
-run { traces 
-not always (terminate_transition => wellformed_rb)} for exactly 6 Node
+run { 
+    traces 
+    not always (terminate_transition => wellformed_rb)
+} for exactly 6 Node
