@@ -1,80 +1,9 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-option problem_type temporal
-
-// Node of each graph - left branch, right branch, value, and color
-sig Node {
-    value: one Int,
-    var left: lone Node,
-    var right: lone Node,
-    var color: one Color,
-
-    var type: one Type,
-    var nullNode: one NullNode
-}
-
-one sig Tree {
-    var rootNode: lone Node
-}
-
-// Color of nodes
-abstract sig Color {}
-one sig Black, Red extends Color {}
-
-abstract sig Type {}
-one sig Single, DoubleBlack extends Type {}
-
-abstract sig NullNode {}
-one sig IsNull, NotNull extends NullNode {}
-
-// Helper to avoid more typing
-fun root: lone Node {
-    Tree.rootNode
-}
-
-fun immediateChildren: set Node -> Node {
-    left + right
-}
-
-// Parent is the transpose of immediateChildren
-fun parent: set Node -> Node {
-    ~immediateChildren
-}
+open "tree_electrum.frg"
 
 fun grandparent: set Node -> Node {
     parent.parent
-}
-
-fun sibling: set Node -> Node {
-    { n, sib : Node | {
-        sib != n
-        sib in n.parent.immediateChildren}
-    }
-}
-
-fun farNephew: set Node -> Node {
-    { n, nephew : Node | {
-        n.parent.left = n => {
-            n.sibling.right = nephew
-        } else {
-            n.sibling.left = nephew
-        }
-    }}
-}
-
-fun nearNephew: set Node -> Node {
-    { n, nephew : Node | {
-        n.parent.left = n => {
-            n.sibling.left = nephew
-        } else {
-            n.sibling.right = nephew
-        }
-    }}
-}
-
-// Children is *all* children in a node's subtree
-fun children: set Node -> Node {
-    ^immediateChildren
 }
 
 // The sibling of a node's parent
@@ -84,12 +13,9 @@ fun uncle: set Node -> Node {
     grandparent.immediateChildren - parent
 }
 
+
 pred inTree[n: Node] {
     n in treeNode
-}
-
-fun treeNode: set Node {
-    root + root.children
 }
 
 // wellformed tree
@@ -406,7 +332,6 @@ pred recolorDelete {
             db.nearNephew.type' = db.nearNephew.type
             db.nearNephew.nullNode' = db.nearNephew.nullNode
         } else {
-
             -- Case 3: sibling is black and the children are black
             -- also the case where there is no sibling
             {

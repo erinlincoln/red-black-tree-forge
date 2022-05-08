@@ -356,47 +356,4 @@ test expect {
             }
         }
     } is theorem
-
-    // PROPERTY TESTS
-    // some nextInsertNode implies tree is not wellformed
-    nextInsertImpliesWellformed: {
-        some nextInsertNode => not wellformed_rb
-    } is theorem
-
-    // rotate or recolor implies tree is not wellformed
-    rotateOrRecolorImpliesNotWellformed: {
-        {
-            traces and 
-            (rotate_transition or recolor_transition)
-        } => not wellformed_rb
-    } is theorem
-
-    // terminate transition implies tree is wellformed
-    terminateTransitionImpliesWellformed: {
-        {
-            traces
-            always terminate_transition
-        } => wellformed_rb
-    } is theorem
-
-    // eventually wellformed_rb after insert
-    eventuallyWellformedAfterInsert: {
-        always ({
-            traces
-            insert_transition
-        } => eventually wellformed_rb)
-    } is theorem
-
-    // binary tree always maintained
-    alwaysBinaryWellformed: {
-        traces implies always wellformed_binary
-    } is theorem
-
-    // there is always a root node
-    alwaysRootNode: {
-        {
-            traces
-            always some (left + right)
-        } => always some rootNode
-    } is theorem
 }
