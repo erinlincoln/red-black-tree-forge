@@ -853,6 +853,7 @@ fun nextInsertNode: lone Node {
 pred terminate_transition {
     // Don't terminate until done inserting
     no nextInsertNode
+    // Don't terminate until done deleting
     no dbNode
 
     left' = left
@@ -865,7 +866,7 @@ pred terminate_transition {
     nullNode' = nullNode
 }
 
-pred rotate_transition {
+pred rotate_transition {    
     // implies that tree isn't wellformed
     // TODO: Test that we only have one of these at any given time
     some nextInsertNode
@@ -878,12 +879,18 @@ pred recolor_transition {
 }
 
 pred insert_transition {
+    // Don't insert until done deleting
+    no dbNode
+
     -- Don't insert until the previous insert is cleaned up
     no nextInsertNode
     some n: Node | insert[n]
 }
 
 pred delete_transition {
+    // Don't delete until done deleting
+    no dbNode
+
     -- Don't delete if node is being inserted
     no nextInsertNode
     some n: Node | delete[n]
@@ -897,11 +904,6 @@ pred delete_recolor_transition {
 pred traces {
     wellformed_rb
 
-    #treeNode >= 2
-    // insert_transition
-    delete_transition
-    next_state delete_recolor_transition
-
     always {
         (
             insert_transition or
@@ -914,8 +916,4 @@ pred traces {
     }
 }
 
-// run { traces } for exactly 6 Node
-run { 
-    traces 
-    not always (terminate_transition => wellformed_rb)
-} for exactly 6 Node
+run { traces } for exactly 6 Node
