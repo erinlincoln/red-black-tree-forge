@@ -19,6 +19,9 @@ sig Node {
 abstract sig Type {}
 one sig Single, DoubleBlack extends Type {}
 
+abstract sig NullNode {}
+one sig IsNull, NotNull extends NullNode {}
+
 one sig Tree {
     var rootNode: lone Node
 }
@@ -113,4 +116,9 @@ pred wellformed_rb {
 
     // We do not include a constraint about the leaf nodes being black because
     // NIL leaves are implicitly treated as black
+
+    -- included for delete:
+    all n : treeNode | n in treeNode => {
+        n.type = Single
+    }
 }

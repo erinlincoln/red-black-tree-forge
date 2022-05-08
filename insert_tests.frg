@@ -2,6 +2,7 @@
 
 // Tests for the basic BST insertion
 
+open "tree_electrum.frg"
 open "red_black.frg"
 
 // Use a trace length of 2, which is enough to prove properties by induction

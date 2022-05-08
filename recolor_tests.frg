@@ -2,6 +2,7 @@
 
 // Tests for recoloring after insertion
 
+open "tree_electrum.frg"
 open "red_black.frg"
 
 option problem_type temporal

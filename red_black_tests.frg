@@ -1,5 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
+open "tree_electrum.frg"
 open "red_black.frg"
 
 // Use a trace length of 2, which is enough to prove properties by induction
@@ -266,7 +267,7 @@ pred redImpliesBlackLeftRight {
 
 pred sameBlackDepth {
     // For every node in the tree ...
-    all n: Node | inTree[n] => {
+    all n: Node | (n in treeNode) => {
         // ... there is some number such that ...
         some d: Int | {
             // ... all children nodes that are "leaves" ...
