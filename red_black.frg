@@ -782,6 +782,8 @@ pred delete_recolor_transition {
 pred traces {
     wellformed_rb
 
+    some root
+
     always {
         (
             insert_transition or
