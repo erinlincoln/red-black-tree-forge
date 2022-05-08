@@ -10,8 +10,14 @@ sig Node {
     value: one Int,
     var left: lone Node,
     var right: lone Node,
-    var color: one Color
+    var color: one Color,
+
+    var type: one Type,
+    var nullNode: one NullNode
 }
+
+abstract sig Type {}
+one sig Single, DoubleBlack extends Type {}
 
 one sig Tree {
     var rootNode: lone Node

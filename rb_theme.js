@@ -12,14 +12,14 @@ const w_margin = 100;
 const radius = 20;
 const numInst = instances.length
 
-function instanceToTree (inst) {
+function instanceToTree(inst) {
     // get sig insances
     const atoms = inst.signature("Node").atoms(true);
-    const nodes = atoms.map(atom => ({ id: atom.id()}));
+    const nodes = atoms.map(atom => ({ id: atom.id() }));
 
     // get root
     const roots = inst.field('rootNode').tuples();
-    const root = roots.map(tuple => { 
+    const root = roots.map(tuple => {
         const atoms = tuple.atoms();
         return {
             id: atoms[1].id()
@@ -31,21 +31,21 @@ function instanceToTree (inst) {
     const lefts = ltuples.map(tuple => {
         const atoms = tuple.atoms();
         return {
-         source: atoms[0].id(),
-         target: atoms[1].id()
+            source: atoms[0].id(),
+            target: atoms[1].id()
         }
     });
-    const left = Object.assign({}, ...lefts.map((x) => ({[x.source]: x.target})));
+    const left = Object.assign({}, ...lefts.map((x) => ({ [x.source]: x.target })));
 
     const rtuples = inst.field('right').tuples();
     const rights = rtuples.map(tuple => {
         const atoms = tuple.atoms();
         return {
-         source: atoms[0].id(),
-         target: atoms[1].id()
+            source: atoms[0].id(),
+            target: atoms[1].id()
         }
     });
-    const right = Object.assign({}, ...rights.map((x) => ({[x.source]: x.target})));
+    const right = Object.assign({}, ...rights.map((x) => ({ [x.source]: x.target })));
 
 
     // get colors of nodes
@@ -53,26 +53,48 @@ function instanceToTree (inst) {
     const color = ctuples.map(tuple => {
         const atoms = tuple.atoms();
         return {
-         n: atoms[0].id(),
-         c: atoms[1].id()
+            n: atoms[0].id(),
+            c: atoms[1].id()
         }
     });
-    const colors = Object.assign({}, ...color.map((x) => ({[x.n]: x.c})));
+    const colors = Object.assign({}, ...color.map((x) => ({ [x.n]: x.c })));
 
     const vtuples = inst.field('value').tuples();
     const value = vtuples.map(tuple => {
         const atoms = tuple.atoms();
         return {
-         n: atoms[0].id(),
-         v: atoms[1].id()
+            n: atoms[0].id(),
+            v: atoms[1].id()
         }
     });
-    const values = Object.assign({}, ...value.map((x) => ({[x.n]: x.v})));
-    
-    return [nodes, root, left, right, colors, values];
+    const values = Object.assign({}, ...value.map((x) => ({ [x.n]: x.v })));
+
+    // get type of nodes
+    const ttuples = inst.field('type').tuples();
+    const type = ttuples.map(tuple => {
+        const atoms = tuple.atoms();
+        return {
+            n: atoms[0].id(),
+            t: atoms[1].id()
+        }
+    });
+    const types = Object.assign({}, ...type.map((x) => ({ [x.n]: x.t })));
+
+    // get if null
+    const ntuples = inst.field('nullNode').tuples();
+    const nullNode = ntuples.map(tuple => {
+        const atoms = tuple.atoms();
+        return {
+            n: atoms[0].id(),
+            i: atoms[1].id()
+        }
+    })
+    const nullNodes = Object.assign({}, ...nullNode.map((x) => ({ [x.n]: x.i })));
+
+    return [nodes, root, left, right, colors, values, types, nullNodes];
 }
 
-function setNodeXY (root, left, right, inst) {
+function setNodeXY(root, left, right, inst) {
     const x = new Map();
     const y = new Map();
     const n = [];
@@ -99,14 +121,14 @@ function setNodeXY (root, left, right, inst) {
     const height = treeHeight(root.id) + 1;
 
     function xleft(node) {
-        return x.get(node) - (treeHeight(node)/height)*w_margin; 
+        return x.get(node) - (treeHeight(node) / height) * w_margin;
     }
     function xright(node) {
-        return x.get(node) + (treeHeight(node)/height)*w_margin; 
+        return x.get(node) + (treeHeight(node) / height) * w_margin;
     }
 
     function yval(node) {
-        return (y.get(node) + h_margin/height/numInst); 
+        return (y.get(node) + h_margin / height / numInst);
     }
 
     function xyHelper(node) {
@@ -131,17 +153,17 @@ function setNodeXY (root, left, right, inst) {
 
     n.push(root.id)
     x.set(root.id, 250);
-    y.set(root.id, 40 + (h_margin/numInst)*insth);
+    y.set(root.id, 40 + (h_margin / numInst) * insth);
     xyHelper(root.id)
     console.log(y)
-    return [x,y,n]
+    return [x, y, n]
 }
 
 function getKey(obj, val) {
     for (var key in Object.keys(obj)) {
-            if (obj[Object.keys(obj)[key]] === val)
-                return Object.keys(obj)[key];
-            }
+        if (obj[Object.keys(obj)[key]] === val)
+            return Object.keys(obj)[key];
+    }
 }
 
 function parent(node, left, right) {
@@ -159,7 +181,7 @@ function parent(node, left, right) {
 }
 
 function graph(inst) {
-    var [inodes, iroot, ileft, iright, icolors, ivalues] = instanceToTree(inst);
+    var [inodes, iroot, ileft, iright, icolors, ivalues, itypes, inulls] = instanceToTree(inst);
     var [ix, iy, inode] = setNodeXY(iroot, ileft, iright, inst);
 
     d3.select(svg)
@@ -171,7 +193,7 @@ function graph(inst) {
         .attr("x1", (d, i) => {
             return ix.get(d) - 5
         })
-        
+
         .attr("y1", (d, i) => {
             return iy.get(d) + 5
         })
@@ -181,7 +203,7 @@ function graph(inst) {
             } else {
                 return ix.get(d) - 5
             }
-            
+
         })
         .attr("y2", (d, i) => {
             if (parent(d, ileft, iright) != null) {
@@ -189,7 +211,7 @@ function graph(inst) {
             } else {
                 return iy.get(d) - 5
             }
-            
+
         });
     d3.select(svg)
         .selectAll("nodes")
@@ -206,6 +228,9 @@ function graph(inst) {
             if (icolors[d] == "Red0") {
                 return RED;
             }
+            if (itypes[d] == "DoubleBlack0") {
+                return "#5484E3";
+            }
             if (icolors[d] == "Black0") {
                 return BLACK;
             }
@@ -221,6 +246,9 @@ function graph(inst) {
             return iy.get(d) + 5;
         })
         .text((d, i) => {
+            if (inulls[d] == "IsNull0" && itypes[d] == "DoubleBlack0") {
+                return "N";
+            }
             return ivalues[d];
         })
         .attr("fill", "#ffffff");
