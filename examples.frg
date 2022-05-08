@@ -1,5 +1,6 @@
 #lang forge
 
+open "tree_electrum.frg"
 open "red_black.frg"
 option max_tracelength 4
 

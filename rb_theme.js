@@ -118,7 +118,10 @@ function setNodeXY(root, left, right, inst) {
         }
     }
 
-    const height = treeHeight(root.id) + 1;
+    let height = 1
+    if (root != null) {
+        height = treeHeight(root.id) + 1;
+    }
 
     function xleft(node) {
         return x.get(node) - (treeHeight(node) / height) * w_margin;
@@ -150,12 +153,13 @@ function setNodeXY(root, left, right, inst) {
             xyHelper(right[node]);
         }
     }
-
-    n.push(root.id)
-    x.set(root.id, 250);
-    y.set(root.id, 40 + (h_margin / numInst) * insth);
-    xyHelper(root.id)
-    console.log(y)
+    if (root != null) {
+        n.push(root.id)
+        x.set(root.id, 250);
+        y.set(root.id, 40 + (h_margin / numInst) * insth);
+        xyHelper(root.id)
+        console.log(y)
+    }
     return [x, y, n]
 }
 

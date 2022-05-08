@@ -28,9 +28,6 @@ test expect {
                 -- Only rotate or recolor when the current state is not well-formed
                 (rotate_transition or recolor_transition) => not wellformed_rb
 
-                -- when the tree recolors, the next state will be well-formed
-                recolor_transition => next_state wellformed_rb
-
                 // -- eventually wellformed_rb after delete
                 delete_transition => eventually wellformed_rb
 
@@ -38,7 +35,7 @@ test expect {
                 delete_recolor_transition => not wellformed_rb
             }
         }
-    } for exactly 6 Node is theorem
+    } for exactly 4 Node is theorem
 
     canInsertWithoutRecolorOrRotate: {
         traces
