@@ -7,9 +7,9 @@ d3.select(svg).selectAll("*").remove();
 // constants
 const RED = "#B22222";
 const BLACK = "#000000";
-const h_margin = 600;
-const w_margin = 100;
-const radius = 20;
+const h_margin = 500;
+// const w_margin = 100;
+const radius = 45;
 const numInst = instances.length
 
 function instanceToTree(inst) {
@@ -94,11 +94,10 @@ function instanceToTree(inst) {
     return [nodes, root, left, right, colors, values, types, nullNodes];
 }
 
-function setNodeXY(root, left, right, inst) {
+function setNodeXY(root, left, right, inst, sx, sy, w_margin, h_factor, xmin = null, xmax = null) {
     const x = new Map();
     const y = new Map();
     const n = [];
-    const insth = getKey(instances, inst);
 
 
     function treeHeight(node) {
@@ -128,34 +127,48 @@ function setNodeXY(root, left, right, inst) {
     }
 
     function yval(node) {
-        return (y.get(node) + h_margin / height / numInst);
+        return (y.get(node) + h_margin / height * h_factor);
     }
 
     function xyHelper(node) {
         if (left[node] != null) {
             x.set(left[node], xleft(node));
-            // x[left[node]] = x[node] - w_margin;
             y.set(left[node], yval(node));
-            // y[left[node]] = y[node] + h_margin;
-            // alert(left[node])
             n.push(left[node]);
             xyHelper(left[node]);
         }
         if (right[node] != null) {
             x.set(right[node], xright(node));
-            // x[right[node]] = x[node] + w_margin;
             y.set(right[node], yval(node));
-            // y[right[node]] = y[node] + h_margin;
             n.push(right[node]);
             xyHelper(right[node]);
         }
     }
 
     n.push(root.id)
-    x.set(root.id, 250);
-    y.set(root.id, 40 + (h_margin / numInst) * insth);
+    x.set(root.id, sx);
+    y.set(root.id, sy);
     xyHelper(root.id)
-    console.log(y)
+
+    const min = Math.min(...x.values())
+    const max = Math.max(...x.values())
+    var factor = (min-max)/2;
+
+    if (xmin != null) {
+        const want = xmax-xmin
+        const have = max-min
+        factor = want/have
+        const range = xmax - max*factor
+        for (const [key, value] of x) {
+            x.set(key, value*factor + range);
+        }
+        console.log(x)
+    } else {
+        for (const [key, value] of x) {
+            x.set(key, value + factor);
+        }
+    }
+
     return [x, y, n]
 }
 
@@ -180,15 +193,25 @@ function parent(node, left, right) {
     }
 }
 
-function graph(inst) {
+function bottomGraph() {
+    for (let j = 0; j < numInst; j++) {
+        var sx = j/numInst*500 + 200;
+        const sy = 550
+
+        console.log("bottom")
+        treeGraph(instances[j], sx, sy, 100, 1/3, j/numInst*600 + 50, j/numInst*600 + 400/numInst);
+    }
+}
+
+function treeGraph(inst, sx, sy, w_margin, factor, xmin = null, xmax = null) {
     var [inodes, iroot, ileft, iright, icolors, ivalues, itypes, inulls] = instanceToTree(inst);
-    var [ix, iy, inode] = setNodeXY(iroot, ileft, iright, inst);
+    var [ix, iy, inode] = setNodeXY(iroot, ileft, iright, inst, sx, sy, w_margin, factor, xmin, xmax);
 
     d3.select(svg)
         .selectAll("lines")
         .data(inode)
         .join("line")
-        .style("stroke-width", 10)
+        .style("stroke-width", 15*factor)
         .style("stroke", BLACK)
         .attr("x1", (d, i) => {
             return ix.get(d) - 5
@@ -213,6 +236,7 @@ function graph(inst) {
             }
 
         });
+
     d3.select(svg)
         .selectAll("nodes")
         .data(inode)
@@ -223,7 +247,7 @@ function graph(inst) {
         .attr("cy", (d, i) => {
             return iy.get(d)
         })
-        .attr("r", radius)
+        .attr("r", radius*factor)
         .attr("fill", (d, i) => {
             if (icolors[d] == "Red0") {
                 return RED;
@@ -235,15 +259,16 @@ function graph(inst) {
                 return BLACK;
             }
         });
+
     d3.select(svg)
         .selectAll("values")
         .data(inode)
         .join("text")
         .attr("x", (d, i) => {
-            return ix.get(d) - 5;
+            return ix.get(d);
         })
         .attr("y", (d, i) => {
-            return iy.get(d) + 5;
+            return iy.get(d) + 15*factor;
         })
         .text((d, i) => {
             if (inulls[d] == "IsNull0" && itypes[d] == "DoubleBlack0") {
@@ -251,7 +276,103 @@ function graph(inst) {
             }
             return ivalues[d];
         })
+        .attr("text-anchor", "middle")
+        .attr("font-size", 40*factor)
         .attr("fill", "#ffffff");
 }
 
-instances.map(graph)
+function graphButtons(inst) {
+    function prevFunc() {
+        if (i > 0) {
+            i--;
+            d3.select(svg).selectAll("*").remove();
+            graph(instances[i]);
+        } else {
+            d3.select(svg)
+                .selectAll("values")
+                .data(instances)
+                .join("text")
+                .attr("x", 300)
+                .attr("y", 30)
+                .attr("fill", BLACK)
+                .attr("text-anchor", "middle")
+                .text("No more previous instances.");
+        }
+    }
+
+    function nextFunc() {
+        if (i < numInst -1) {
+            i++;
+            d3.select(svg).selectAll("*").remove();
+            graph(instances[i]);
+        } else {
+            d3.select(svg)
+                .selectAll("values")
+                .data(instances)
+                .join("text")
+                .attr("x", 300)
+                .attr("y", 30)
+                .attr("fill", BLACK)
+                .attr("text-anchor", "middle")
+                .text("No more next instances.");
+        }
+    }
+
+    d3.select(svg)
+    .selectAll("next")
+    .data(instances)
+    .join("rect")
+    .attr("x", 480)
+    .attr("y", 10)
+    .attr("width", 80)
+    .attr("height", 30)
+    .on("click", (d, i) => { return nextFunc()});
+
+
+    d3.select(svg)
+    .selectAll("prev")
+    .data(instances)
+    .join("rect")
+    .attr("x", 10)
+    .attr("y", 10)
+    .attr("width", 80)
+    .attr("height", 30)
+    .on("click", (d, i) => { return prevFunc()});
+
+
+    d3.select(svg)
+    .selectAll("btn")
+    .data(instances)
+    .join("text")
+    .attr("x", 520)
+    .attr("y", 33)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 25)
+    .attr("fill", "#ffffff")
+    .text("Next")
+    .on("click", (d, i) => { return nextFunc()});
+
+    d3.select(svg)
+    .selectAll("btn")
+    .data(instances)
+    .join("text")
+    .attr("x", 50)
+    .attr("y", 33)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 25)
+    .attr("fill", "#ffffff")
+    .text("Prev")
+    .on("click", (d, i) => { return prevFunc()});
+
+}
+
+
+function graph(inst) {
+    treeGraph(inst, 400, 150, 100, 1)
+    graphButtons(inst)
+    bottomGraph()
+}
+
+var i = 0
+
+graph(instances[0])
