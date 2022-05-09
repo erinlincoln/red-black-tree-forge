@@ -46,6 +46,11 @@ fun inorderSuccessor: set Node -> Node {
 }
 
 pred delete[n : Node] {
+    // Don't delete until done deleting another node
+    no dbNode
+    -- Don't delete if node is being inserted
+    no nextInsertNode
+
     -- Node must be in tree
     n in treeNode
 
@@ -56,9 +61,6 @@ pred delete[n : Node] {
     no n.parent'
     no n.left'
     no n.right'
-
-    -- FOR TESTING
-    // some n.left and some n.right and n.color = Black
 
     -- the node is a leaf
     no n.left and no n.right => {
@@ -545,11 +547,20 @@ pred recolorDelete {
 pred insert[n : Node] {
     // Tree is assumed to be wellformed BST before node is added
 
+    // Don't insert until done deleting
+    no dbNode
+
+    -- Don't insert until the previous insert is cleaned up
+    no nextInsertNode
+
     -- New node is not in the current tree
     not (n in treeNode)
 
     -- New node is in the next state
     n in treeNode'
+
+    -- New node must not be DoubleBlack
+    n.type = Single
 
     -- All colors stay the same except
     -- the new node is red
@@ -588,15 +599,16 @@ pred insert[n : Node] {
             }
         }
     }
-
-
 }
 
 pred recolorEnabled[n: Node] {
+    -- Must be in the process of inserting
+    some nextInsertNode
+
     n.color = Red
-    n.grandparent.color = Black
-    n.parent.color = Red
-    n.uncle.color = Red
+    n.grandparent.color = Black or no n.grandparent
+    n.parent.color = Red or no n.parent
+    n.uncle.color = Red or (no n.uncle and no n.grandparent)
 }
 
 pred recolor[n: Node] {
@@ -609,15 +621,28 @@ pred recolor[n: Node] {
     type' = type
     nullNode' = nullNode
 
-    let g = n.grandparent, p = n.parent, u = n.uncle | {
-        color' = (color - ((g + p + u) -> Color)) +
-            g -> Red +
-            p -> Black +
-            u -> Black
+    no n.grandparent and no n.parent => {
+        color' = (color - (n -> Color)) + n -> Black
+    }
+
+    no n.grandparent and some n.parent => {
+        color' = color
+    }
+
+    some n.grandparent and some n.parent => {
+        let g = n.grandparent, p = n.parent, u = n.uncle | {
+            color' = (color - ((g + p + u) -> Color)) +
+                g -> Red +
+                p -> Black +
+                u -> Black
+        }
     }
 }
 
 pred rotateEnabled[n: Node] {
+    -- Must be in the process of inserting
+    some nextInsertNode
+
     n.color = Red
     some n.grandparent
 
@@ -747,30 +772,18 @@ pred terminate_transition {
 pred rotate_transition {    
     // implies that tree isn't wellformed
     // TODO: Test that we only have one of these at any given time
-    some nextInsertNode
     rotate[nextInsertNode]
 }
 
 pred recolor_transition {
-    some nextInsertNode
     recolor[nextInsertNode]
 }
 
 pred insert_transition {
-    // Don't insert until done deleting
-    no dbNode
-
-    -- Don't insert until the previous insert is cleaned up
-    no nextInsertNode
     some n: Node | insert[n]
 }
 
 pred delete_transition {
-    // Don't delete until done deleting
-    no dbNode
-
-    -- Don't delete if node is being inserted
-    no nextInsertNode
     some n: Node | delete[n]
 }
 
@@ -781,8 +794,6 @@ pred delete_recolor_transition {
 
 pred traces {
     wellformed_rb
-
-    some root
 
     always {
         (

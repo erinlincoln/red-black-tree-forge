@@ -60,9 +60,7 @@ We were also able to show properties that we specific to insertion:
 
 One of the main properties we were able to check is that an `insert_transition` will eventually result in a `wellformed_rb` tree. This means that the insertion algorithm will  always complete and the end state will be a wellformed red-black tree.
 
-We also were able to show more specific properties related to the insertion algorithm. First, we showed that `rotate_transition` or `recolor_transition` only happens when the tree is not wellformed. This shows that we never have an unnecessary rotate or recoloring when the tree is already wellformed.
-
-Secondly, we showed that `recolor_transition` is always the final step of the insertion algorithm, and that a `recolor_transition implies next_state wellformed_rb`.
+We also were able to show specific properties related to the insertion algorithm. We showed that `rotate_transition` or `recolor_transition` only happens when the tree is not wellformed. This shows that we never have an unnecessary rotate or recoloring when the tree is already wellformed.
 
 Lastly, we were able to test similar properties for the deletion algorithm.
 

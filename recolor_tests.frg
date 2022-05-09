@@ -73,7 +73,7 @@ test expect {
     (wellformed_tree and (some n: Node | recolor[n])) => {
       left' = left
       right' = right
-      #((color' - color).Color) = 3
+      #((color' - color).Color) <= 3
     }
   } for 8 Node is theorem
 

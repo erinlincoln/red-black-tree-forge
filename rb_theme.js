@@ -158,8 +158,10 @@ function setNodeXY(root, left, right, sx, sy, w_margin, h_factor, xmin = null, x
         }
     }
 
-    // height of tree
-    const height = treeHeight(root.id) + 1;
+    let height = 1
+    if (root != null) {
+        height = treeHeight(root.id) + 1;
+    }
 
     function xleft(node) {
         /* Calculate x position of a node to left of inputted node */
@@ -197,44 +199,46 @@ function setNodeXY(root, left, right, sx, sy, w_margin, h_factor, xmin = null, x
     }
 
     // add root to set of nodes, set root x and y position and run helper on tree
-    n.push(root.id)
-    x.set(root.id, sx);
-    y.set(root.id, sy);
-    xyHelper(root.id)
+    if (root != null) {
+        n.push(root.id)
+        x.set(root.id, sx);
+        y.set(root.id, sy);
+        xyHelper(root.id)
 
-    // get current minimum and maximum x value of tree
-    const min = Math.min(...x.values())
-    const max = Math.max(...x.values())
-    var factor = (min-max)/2; // get new center of tree
+        // get current minimum and maximum x value of tree
+        const min = Math.min(...x.values())
+        const max = Math.max(...x.values())
+        var factor = (min-max)/2; // get new center of tree
 
-    // if xmin (and therefore xmax) is set, calculate new positions
-    if (xmin != null) {
-        // get the range you want for the tree and the one you currently have
-        const want = xmax-xmin
-        var have = max-min
-        // if there is only one node(have is 0, make have = want so factor is 1)
-        if (have == 0) {
-            have = want
+        // if xmin (and therefore xmax) is set, calculate new positions
+        if (xmin != null) {
+            // get the range you want for the tree and the one you currently have
+            const want = xmax-xmin
+            var have = max-min
+            // if there is only one node(have is 0, make have = want so factor is 1)
+            if (have == 0) {
+                have = want
+            }
+            // get multiplication factor between want and have
+            factor = want/have
+            // calculate difference between want and have max when factor is applied
+            var range = xmax - max*factor
+            // if only one node, range is 0
+            if (have == want) {
+                range = 0
+            }
+            // set new x values based on factor and range
+            for (const [key, value] of x) {
+                x.set(key, value*factor + range);
+            }
+        // if xmin isn't set, add factor to all x values to center tree
+        } else {
+            for (const [key, value] of x) {
+                x.set(key, value + factor);
+            }
         }
-        // get multiplication factor between want and have
-        factor = want/have
-        // calculate difference between want and have max when factor is applied
-        var range = xmax - max*factor
-        // if only one node, range is 0
-        if (have == want) {
-            range = 0
-        }
-        // set new x values based on factor and range
-        for (const [key, value] of x) {
-            x.set(key, value*factor + range);
-        }
-    // if xmin isn't set, add factor to all x values to center tree
-    } else {
-        for (const [key, value] of x) {
-            x.set(key, value + factor);
-        }
-    }
-
+    }   
+    
     return [x, y, n]
 }
 
