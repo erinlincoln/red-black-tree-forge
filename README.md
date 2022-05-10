@@ -84,39 +84,39 @@ It is important to note that when running the deletion adds a significant time c
 
 rb_tests
 
-    These tests include both a multitude of examples of Red Black Trees and essential properties we would like to check for static trees. These tests prove we can have trees with many nodes, the essential properties of a red black tree are fulfilled (see list below), and the functions we have about the relationships between nodes are correct.
+These tests include both a multitude of examples of Red Black Trees and essential properties we would like to check for static trees. These tests prove we can have trees with many nodes, the essential properties of a red black tree are fulfilled (see list below), and the functions we have about the relationships between nodes are correct.
 
-    Essential Properties of Red Black Tree (which ensure balance):
-    1. Every node is black or red (by Node sig definition)
-    2. Every leaf is null and black (assumption of our model)
-    3. If a node is red, its children are black
-    4. Every path from a node to its leaves contains the same amount of black nodes (ensures balance)
+Essential Properties of Red Black Tree (which ensure balance):
+1. Every node is black or red (by Node sig definition)
+2. Every leaf is null and black (assumption of our model)
+3. If a node is red, its children are black
+4. Every path from a node to its leaves contains the same amount of black nodes (ensures balance)
 
 
 rb_height_tests
 
-    These tests demonstrate the essential relationship between the number of nodes in a tree and the maximum height of a tree. In other words, the tests in this file prove that the model's trees are balanced with increasing height.
+These tests demonstrate the essential relationship between the number of nodes in a tree and the maximum height of a tree. In other words, the tests in this file prove that the model's trees are balanced with increasing height.
 
 insert_tests
 
-    This file includes the basic tests for insertion that can be proved with a tracelength of 2. Essentially, this tests a basic insertion with no recolor or rotation as a result. The tests include testing that we can and cannot insert into the type of trees we expect and essential properties of insert, such as insert increasing the size of the tree and that insert will eventually lead to a wellformed tree via traces.
+This file includes the basic tests for insertion that can be proved with a tracelength of 2. Essentially, this tests a basic insertion with no recolor or rotation as a result. The tests include testing that we can and cannot insert into the type of trees we expect and essential properties of insert, such as insert increasing the size of the tree and that insert will eventually lead to a wellformed tree via traces.
 
 insert_tests_longer_tracelength
 
-    We split the tests for insert that require a longer tracelength into this file as to prevent unnecessarily long runtimes while testing basic insert properties. There are three tests: some node to insert implies the tree is not wellformed, all predicates to do with insert will eventually lead to a wellformed tree via traces, and that insert can occur without recoloring or rotating.
+We split the tests for insert that require a longer tracelength into this file as to prevent unnecessarily long runtimes while testing basic insert properties. There are three tests: some node to insert implies the tree is not wellformed, all predicates to do with insert will eventually lead to a wellformed tree via traces, and that insert can occur without recoloring or rotating.
 
 insert_rotate_tests
 
-    These tests are examples for rotate to ensure it behaves as expected in those examples. They cover each type of rotation. Additionally, we test that all nodes are preserved through rotation.
+These tests are examples for rotate to ensure it behaves as expected in those examples. They cover each type of rotation. Additionally, we test that all nodes are preserved through rotation.
 
 insert_recolor_tests
 
-    As with rotate tests, these tests include examples for each type of recoloring in terms of insertion. Additionally, there are property tests for recoloring, such as ensuring that a wellformed tree cannot be recolored, checking the maximum number of nodes possibly recolored, and ensuring that there is a case such that a recoloring results in a wellformed tree.
+As with rotate tests, these tests include examples for each type of recoloring in terms of insertion. Additionally, there are property tests for recoloring, such as ensuring that a wellformed tree cannot be recolored, checking the maximum number of nodes possibly recolored, and ensuring that there is a case such that a recoloring results in a wellformed tree.
 
 delete_tests
 
-    The delete tests encompass examples for each potential case of deletion in terms of the location of the DoubleBlack node. It also includes property tests for deletion, such that deletion cannot occur in an empty tree, you can delete in trees of various height and number of nodes, and that some DoubleBlack node implies that the tree is not wellformed. 
-    Note: some tests are commented out in this file. As noted above, our implementation of delete still has some bugs. Therefore, the commented out tests are failing.
+The delete tests encompass examples for each potential case of deletion in terms of the location of the DoubleBlack node. It also includes property tests for deletion, such that deletion cannot occur in an empty tree, you can delete in trees of various height and number of nodes, and that some DoubleBlack node implies that the tree is not wellformed. 
+Note: some tests are commented out in this file. As noted above, our implementation of delete still has some bugs. Therefore, the commented out tests are failing.
 
 ## Assumptions made
 
