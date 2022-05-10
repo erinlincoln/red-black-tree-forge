@@ -2,6 +2,8 @@
 
 ## Model Structure
 
+TODO: ADD MODEL STRUCTURE OVERVIEW (Conrad)
+
 ### Sigs
 
 Tree:
@@ -48,7 +50,9 @@ terminate_transition:
 
 This predicate is the last state after the tree changes. If the termination predicate can be reached, this means that there is no `nextInsertNode` and the tree must be wellformed.
 
-## Model Properties
+## Testing
+
+### Model Properties
 
 By structuring our model this way we were able to test several properties about the insertion and deletion process for red-black trees. These property tests can be found in the file `red_black_tests_longer_tracelength.frg` under tracesBehavior.
 
@@ -62,6 +66,8 @@ One of the main properties we were able to check is that an `insert_transition` 
 
 We also were able to show specific properties related to the insertion algorithm. We showed that `rotate_transition` or `recolor_transition` only happens when the tree is not wellformed. This shows that we never have an unnecessary rotate or recoloring when the tree is already wellformed.
 
+TODO: EXPLAIN THAT THIS DIDNT QUITE HAPPEN (Julia)
+
 Lastly, we were able to test similar properties for the deletion algorithm.
 
 First, we showed that a `delete_transition implies eventually wellformed_rb`. Just as with insertion, this shows that once deletion has begun, the algorithm will always complete such that the tree is a wellformed_rb tree.
@@ -70,20 +76,28 @@ Second, we also showed that `delete_recolor_transition implies not wellformed_rb
 
 It is important to note that when running the deletion adds a significant time complexity. Thus, to be able to run the tracesBehavior test with reasonable runtime the number of nodes we recommend is 6. However, for the insertion predicates (if you comment out the deletion related code in traces and the tests) are able to run with a relatively reasonable time for 6 Nodes.
 
-RUNTIME PROPERTIES?
+### Runtime properties
 
-## Tradeoffs made
+(Conrad)
+
+### Unit tests
+
+(Erin)
 
 ## Assumptions made
 
 One of the major assumptions we made in the design of our model is that if a node does not have a left or a right node then that means that there is a leaf there that is colored black. This is a property of a red-black tree, however, we decided to not explicitly code the leaf since we know that we could always rely on the leaf being a black node with no value.
 
-## Model Limits
+## Challenges
+
+(Julia)
 
 ## Adjustments from Proposal
 
 Our model pretty accurately encompasses what we set out to do in our proposal.
 
 ## Understanding Output/Visualization
+
+UPDATE (Erin)
 
 Our visualizer can be found in the file `rb_theme.js`. It runs through the `<svg>` script in Sterling. When you run, the states will appear vertically, centered around the root node. Each node is represented by a circle with their value inside. The color will either be black (for a black node), red (for a red node), or blue (for a DoubleBlack node). Each state shows one of the transitions.
