@@ -49,6 +49,71 @@ fun children: set Node -> Node {
     ^immediateChildren
 }
 
+fun grandparent: set Node -> Node {
+    parent.parent
+}
+
+// The sibling of a node's parent
+fun uncle: set Node -> Node {
+    // Include both of the grandparent's immediate children, but remove the parent,
+    // thus there is at most a single uncle for every node
+    grandparent.immediateChildren - parent
+}
+
+// Wanted: X -> S
+//    R    and   R
+//   / \        / \
+//  X   S      S   X
+fun sibling: set Node -> Node {
+    (~left).right + (~right).left
+}
+
+// Wanted: X -> N
+//    R    and   R
+//   / \        / \
+//  X   S      S   X
+//       \    /
+//        N  N
+fun farNephew: set Node -> Node {
+    // ~left creates a relation of left nodes -> their parent
+    // Then (~left).right gets the sibling of all left nodes
+    // Then (~left).right.right gets the right child of all left node siblings
+    // Mirror for right nodes
+    (~left).right.right + (~right).left.left
+
+    // Equivalent:
+    // { n, nephew : Node | {
+    //     n.parent.left = n => {
+    //         n.sibling.right = nephew
+    //     } else {
+    //         n.sibling.left = nephew
+    //     }
+    // }}
+}
+
+// Wanted: X -> N
+//    R    and   R
+//   / \        / \
+//  X   S      S   X
+//     /        \
+//    N          N
+fun nearNephew: set Node -> Node {
+    // ~left creates a relation of left nodes -> their parent
+    // Then (~left).right gets the sibling of all left nodes
+    // Then (~left).right.left gets the left child of all left siblings
+    // Mirror for right nodes
+    (~left).right.left + (~right).left.right
+
+    // Equivalent:
+    // { n, nephew : Node | {
+    //     n.parent.left = n => {
+    //         n.sibling.left = nephew
+    //     } else {
+    //         n.sibling.right = nephew
+    //     }
+    // }}
+}
+
 fun treeNode: set Node {
     root + root.children
 }
@@ -56,7 +121,7 @@ fun treeNode: set Node {
 // wellformed tree
 pred wellformed_tree {
     // Everything not in the tree is a lone node
-    all n: Node - treeNode | no n.left and no n.right
+    no (Node - treeNode).immediateChildren
 
     // not reachable from itself
     all n : Node | n not in n.children
@@ -118,7 +183,7 @@ pred wellformed_rb {
     // NIL leaves are implicitly treated as black
 
     -- included for delete:
-    all n : treeNode | n in treeNode => {
+    all n : treeNode | {
         n.type = Single
     }
 }

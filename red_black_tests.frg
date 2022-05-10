@@ -1,11 +1,10 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
 open "tree_electrum.frg"
-open "red_black.frg"
 
 // Use a trace length of 2, which is enough to prove properties by induction
 // Put longer tests in another file
-option max_tracelength 2
+option max_tracelength 1
 
 inst baseInst {
     Tree = `tree
@@ -227,21 +226,12 @@ example parentNodesOutsideOfTree is not wellformed_tree for {
     no right
 }
 
-// Example test for testing blackDepth function
 //       4B
 //     /   \
 //   2R     6B
 //  /  \    /
 // 1B  3B  5R
-example blackDepthTest is {
-    wellformed_binary
-    blackDepth[root] = 1
-    some n1: Node | n1.value = 1 and blackDepth[n1] = 2
-    some n2: Node | n2.value = 2 and blackDepth[n2] = 1
-    some n3: Node | n3.value = 3 and blackDepth[n3] = 2
-    some n5: Node | n5.value = 5 and blackDepth[n5] = 2
-    some n6: Node | n6.value = 6 and blackDepth[n6] = 2
-} for {
+inst SixNodeExample {
     baseInst
     rootNode = Tree -> `n4
     Node = `n1 + `n2 + `n3 + `n4 + `n5 + `n6
@@ -251,6 +241,70 @@ example blackDepthTest is {
     left = `n4 -> `n2 + `n2 -> `n1 + `n6 -> `n5
     right = `n4 -> `n6 + `n2 -> `n3
 }
+
+example blackDepthTest is {
+    wellformed_binary
+    blackDepth[root] = 1
+    some n1: Node | n1.value = 1 and blackDepth[n1] = 2
+    some n2: Node | n2.value = 2 and blackDepth[n2] = 1
+    some n3: Node | n3.value = 3 and blackDepth[n3] = 2
+    some n5: Node | n5.value = 5 and blackDepth[n5] = 2
+    some n6: Node | n6.value = 6 and blackDepth[n6] = 2
+} for SixNodeExample
+
+example siblingExample is {
+    wellformed_binary
+    some n1, n3: Node | {
+        n1.value = 1
+        n3.value = 3
+        n1.sibling = n3
+        n3.sibling = n1
+    }
+
+    some n2, n6: Node | {
+        n2.value = 2
+        n6.value = 6
+        n2.sibling = n6
+        n6.sibling = n2
+    }
+
+    some n5: Node | n5.value = 5 and no n5.sibling
+    some n4: Node | n4.value = 4 and no n4.sibling
+} for SixNodeExample
+
+// Example test for testing blackDepth function
+//       4B
+//     /   \
+//   2R     6B
+//  /  \    / \
+// 1B  3B  5R  7R
+inst SevenNodeExample {
+    baseInst
+    rootNode = Tree -> `n4
+    Node = `n1 + `n2 + `n3 + `n4 + `n5 + `n6 + `n7
+    value = `n1 -> 1 + `n2 -> 2 + `n3 -> 3 + `n4 -> 4 + `n5 -> 5 + `n6 -> 6 + `n7 -> 7
+    color = `n1 -> Black + `n2 -> Red + `n3 -> Black +
+            `n4 -> Black + `n5 -> Red + `n6 -> Black + `n7 -> Red
+    left = `n4 -> `n2 + `n2 -> `n1 + `n6 -> `n5
+    right = `n4 -> `n6 + `n2 -> `n3 + `n6 -> `n7
+}
+
+example farNearNephewExample is {
+    wellformed_binary
+
+    some n1, n2, n3, n5, n6, n7: Node | {
+        (n1 -> 1 + n2 -> 2 + n3 -> 3 + n5 -> 5 + n6 -> 6 + n7 -> 7) in value
+
+        n6.farNephew = n1
+        n6.nearNephew = n3
+
+        n2.farNephew = n7
+        n2.nearNephew = n5
+
+        no (Node - (n2 + n6)).farNephew
+        no (Node - (n2 + n6)).nearNephew
+    }
+} for SevenNodeExample
 
 // all nodes are red or black (coded into node propety)
 pred allRedBlack {
@@ -284,14 +338,6 @@ pred sameBlackDepth {
     }
 }
 
-fun log[nodes: set Node] : Int {
-    let count = #{n : Node | n in nodes} | {
-        
-    }
-}
-
-// All nodes in a left subtree 
-
 test expect {
     vacuous: {wellformed_rb} is sat
 
@@ -322,7 +368,7 @@ test expect {
     } } is theorem
     
     // Trees don't contain cycles
-    treeTest: { wellformed_tree => (all n: Node | n not in n.^(left + right)) } is theorem
+    treeTest: { wellformed_tree => (all n: Node | n not in n.children) } is theorem
 
     // sat for an empty tree (no root)
     emptyTree: {wellformed_rb} for exactly 0 Node is sat 
@@ -357,4 +403,27 @@ test expect {
             }
         }
     } is theorem
+
+    siblingTest: {
+        wellformed_tree => {
+            no root.sibling
+            all n: Node | lone n.sibling
+            all n1, n2: Node | {
+                (n1.sibling = n2) => n2.sibling = n1
+            }
+        }
+    } for 7 Node is theorem
+
+    farNearNephewTest: {
+        wellformed_tree => {
+            no root.farNephew
+            no root.nearNephew
+
+            all n: Node | {
+                no n.farNephew or n.farNephew != n.nearNephew
+                lone n.farNephew
+            }
+        }
+    } for 7 Node is theorem
+
 }
