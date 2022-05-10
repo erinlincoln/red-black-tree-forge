@@ -1,6 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-// Tests for the basic BST insertion
+// Tests for the basic BST insertion. Includes both properties and cases for insertion.
 
 open "../src/tree_electrum.frg"
 open "../src/insert.frg"
