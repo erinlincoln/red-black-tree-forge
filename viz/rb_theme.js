@@ -8,7 +8,7 @@ d3.select(svg).selectAll("*").remove();
 const RED = "#B22222";
 const BLACK = "#000000";
 const h_margin = 500;
-const radius = 45;
+var radius = 40;
 const numInst = instances.length
 
 function instanceToTree(inst) {
@@ -273,7 +273,7 @@ function bottomGraph() {
         const sy = 550
 
         // set xmin and xmax based on instance number and number of instances
-        treeGraph(instances[j], sx, sy, 100, 1/3, j/numInst*600 + 50, j/numInst*600 + 400/numInst);
+        treeGraph(instances[j], sx, sy, 100, 1/3, j/numInst*550 + radius, (j+1)/numInst*550  + radius - 50);
     }
 }
 
@@ -281,6 +281,11 @@ function treeGraph(inst, sx, sy, w_margin, factor, xmin = null, xmax = null) {
     /* Graph a tree with correct position and scale set by inputs. */
     var [inodes, iroot, ileft, iright, icolors, ivalues, itypes, inulls] = instanceToTree(inst);
     var [ix, iy, inode] = setNodeXY(iroot, ileft, iright, sx, sy, w_margin, factor, xmin, xmax);
+
+    if (inode.length > 8) {
+        radius = 30
+        factor = factor/1.1
+    }
 
     // graph lines between nodes
     d3.select(svg)
@@ -461,7 +466,7 @@ function graphButtons(inst) {
 
 function graph(inst) {
     /* Graph all components of vizualizer */
-    treeGraph(inst, 400, 150, 100, 1, 50, 450)
+    treeGraph(inst, 400, 150, 100, 1, 50, 500)
     graphButtons(inst)
     bottomGraph()
 }
