@@ -2,8 +2,7 @@
 
 open "tree_electrum.frg"
 
-// Use a trace length of 2, which is enough to prove properties by induction
-// Put longer tests in another file
+// Since these tests are on static trees, just use one instance
 option max_tracelength 1
 
 inst baseInst {

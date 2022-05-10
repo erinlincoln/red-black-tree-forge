@@ -1,8 +1,5 @@
 #lang forge
 
-// This is identical to "tree_static.frg" except that this specifies var
-// on the fields to allow electrum to modify the trees during traces
-
 option problem_type temporal
 
 // Node of each graph - left branch, right branch, value, and color
