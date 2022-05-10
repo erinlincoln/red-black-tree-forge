@@ -1,7 +1,9 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "tree_electrum.frg"
-open "red_black.frg"
+open "../src/tree_electrum.frg"
+open "../src/insert.frg"
+
+// Insert property tests with longer tracelengths for RBTs.
 
 option max_tracelength 5
 

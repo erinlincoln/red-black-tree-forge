@@ -1,9 +1,8 @@
 #lang forge
 
-// Static (non-electrum) tests that demonstrate the maximum height
-// of a RBT for a given number of nodes
-
-open "tree_electrum.frg"
+open "../src/tree_electrum.frg"
+// Tests that demonstrate the maximum height of a RBT for a given number of nodes.
+// Included to demontrate essential properties of RBTs.
 
 // Since these tests are on static trees, just use one instance
 option max_tracelength 1

@@ -1,6 +1,8 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "tree_electrum.frg"
+open "../src/tree_electrum.frg"
+
+// Show basic examples and properties of a static RBT.
 
 // Since these tests are on static trees, just use one instance
 option max_tracelength 1

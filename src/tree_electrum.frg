@@ -115,6 +115,10 @@ fun treeNode: set Node {
     root + root.children
 }
 
+fun dbNode: lone Node {
+    { n : Node | n.type = DoubleBlack and n in treeNode }
+}
+
 // wellformed tree
 pred wellformed_tree {
     // Everything not in the tree is a lone node
