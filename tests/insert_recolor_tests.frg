@@ -1,9 +1,10 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-// Tests for recoloring after insertion
+// Tests for recoloring after insertion. Includes both examples and properties
+// of trees that will or have undergone recoloring.
 
-open "tree_electrum.frg"
-open "red_black.frg"
+open "../src/tree_electrum.frg"
+open "../src/insert.frg"
 
 option problem_type temporal
 option max_tracelength 3

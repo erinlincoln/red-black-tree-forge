@@ -1,48 +1,12 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
 open "tree_electrum.frg"
-
-fun grandparent: set Node -> Node {
-    parent.parent
-}
-
-fun sibling: set Node -> Node {
-    { n, sib : Node | {
-        sib != n
-        sib in n.parent.immediateChildren}
-    }
-}
-
-fun farNephew: set Node -> Node {
-    { n, nephew : Node | {
-        n.parent.left = n => {
-            n.sibling.right = nephew
-        } else {
-            n.sibling.left = nephew
-        }
-    }}
-}
-
-fun nearNephew: set Node -> Node {
-    { n, nephew : Node | {
-        n.parent.left = n => {
-            n.sibling.left = nephew
-        } else {
-            n.sibling.right = nephew
-        }
-    }}
-}
-
-// The sibling of a node's parent
-fun uncle: set Node -> Node {
-    // Include both of the grandparent's immediate children, but remove the parent,
-    // thus there is at most a single uncle for every node
-    grandparent.immediateChildren - parent
-}
+open "insert.frg"
 
 // Algorithms
 fun inorderSuccessor: set Node -> Node {
-    { n, succ : Node | succ in n.right.^left and no succ.left }
+   some { n, succ : Node | succ in n.right.^left and no succ.left } => { n, succ : Node | succ in n.right.^left and no succ.left }
+   else {n, succ : Node | n.left = succ}
 }
 
 pred delete[n : Node] {
@@ -145,9 +109,15 @@ pred delete[n : Node] {
     some n.left and some n.right => {
         replaceGrandparent[n, n.inorderSuccessor]
 
-        n.inorderSuccessor.left' = n.left
-        n.inorderSuccessor.right' = n.right
-        n.inorderSuccessor.color' = n.color
+        -- CHANGED - added if 
+        n.inorderSuccessor != n.left => {
+            n.inorderSuccessor.left' = n.left
+            n.inorderSuccessor.right' = n.right
+            n.inorderSuccessor.color' = n.color
+        } else {
+            n.inorderSuccessor.right' = n.right
+            n.inorderSuccessor.color' = n.color
+        }
 
         n.left != n.inorderSuccessor => {
             n.left.color' = n.left.color
@@ -165,12 +135,23 @@ pred delete[n : Node] {
                 no db.left'
                 no db.right'
 
-                n.inorderSuccessor.parent.left = n.inorderSuccessor => {
-                    n.inorderSuccessor.parent.left' = db
-                    n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+                -- CHANGED!! added if line below
+                n.inorderSuccessor.parent != n => {
+                    n.inorderSuccessor.parent.left = n.inorderSuccessor => {
+                        n.inorderSuccessor.parent.left' = db
+                        n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+                    } else {
+                        n.inorderSuccessor.parent.right' = db
+                        n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+                    }
                 } else {
-                    n.inorderSuccessor.parent.right' = db
-                    n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+                    n.inorderSuccessor.parent.left = n.inorderSuccessor => {
+                        n.inorderSuccessor.left' = db
+                        n.inorderSuccessor.right' = n.right
+                    } else {
+                        n.inorderSuccessor.right' = db
+                        n.inorderSuccessor.left' = n.left
+                    }
                 }
             }
         } else {
@@ -186,46 +167,29 @@ pred delete[n : Node] {
     }
 
     // all o : Node | (o not in (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
-    all o : Node | (o not in (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
+    all o : Node - (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent) | {
         o.left' = o.left
         o.right' = o.right
     }
 
+    // CHANGED -- added subtracting set of color'
     -- Color stays the same except the left and right
-    color' = color - (n.left -> Color + n.right -> Color)
+    color' - (n.left -> Color + n.right -> Color) = color - (n.left -> Color + n.right -> Color)
 
     -- Type and Null stay the same
     type' = type
     nullNode' = nullNode
 }
 
+// PREVENTS IMPORT ISSUES WITH IMPORTING INSERT AND DELETE SIMULTANEOUSLY
+pred del_rotate_transition{
+    rotate_transition
+}
+
 pred removeDB[db: Node] {
     no db.left'
     no db.right'
     no db.parent'
-}
-
-fun dbNode: lone Node {
-    { n : Node | n.type = DoubleBlack and n in treeNode }
-}
-
-
-pred replaceGrandparent[prev: Node, next: Node] {
-    (prev = root) => {
-        root' = next
-    } else {
-        root' = root
-
-        prev.parent.color' = prev.parent.color
-
-        (some prev.~left) => {
-            prev.parent.left' = next
-            prev.parent.right' = prev.parent.right
-        } else {
-            prev.parent.right' = next
-            prev.parent.left' = prev.parent.left
-        }
-    }
 }
 
 pred recolorDeleteEnabled {
@@ -544,245 +508,6 @@ pred recolorDelete {
     }
 }
 
-pred insert[n : Node] {
-    // Tree is assumed to be wellformed BST before node is added
-
-    // Don't insert until done deleting
-    no dbNode
-
-    -- Don't insert until the previous insert is cleaned up
-    no nextInsertNode
-
-    -- New node is not in the current tree
-    not (n in treeNode)
-
-    -- New node is in the next state
-    n in treeNode'
-
-    -- New node must not be DoubleBlack
-    n.type = Single
-
-    -- All colors stay the same except
-    -- the new node is red
-    color' = (color - (n -> Color)) + n -> Red
-
-    -- type and null stays the same
-    type' = type
-    nullNode' = nullNode
-
-    next_state {
-        all p: treeNode | {
-            (n in p.left.children) => n.value < p.value
-            (n in p.right.children) => n.value > p.value
-        }
-    }
-
-    (no root) => {
-        // Insertion into an empty tree
-        root' = n
-        no left'
-        no right'
-    } else {
-        root' = root
-
-        // Insertion into an existing tree
-        // Find the correct parent node
-        some p: treeNode | {
-            {
-                n.value < p.value
-                left' = left + p -> n
-                right' = right
-            } or {
-                n.value > p.value
-                right' = right + p -> n
-                left' = left
-            }
-        }
-    }
-}
-
-pred recolorEnabled[n: Node] {
-    -- Must be in the process of inserting
-    some nextInsertNode
-
-    n.color = Red
-    n.grandparent.color = Black or no n.grandparent
-    n.parent.color = Red or no n.parent
-    n.uncle.color = Red or (no n.uncle and no n.grandparent)
-}
-
-pred recolor[n: Node] {
-    recolorEnabled[n]
-
-    root' = root
-    left' = left
-    right' = right
-
-    type' = type
-    nullNode' = nullNode
-
-    no n.grandparent and no n.parent => {
-        color' = (color - (n -> Color)) + n -> Black
-    }
-
-    no n.grandparent and some n.parent => {
-        color' = color
-    }
-
-    some n.grandparent and some n.parent => {
-        let g = n.grandparent, p = n.parent, u = n.uncle | {
-            color' = (color - ((g + p + u) -> Color)) +
-                g -> Red +
-                p -> Black +
-                u -> Black
-        }
-    }
-}
-
-pred rotateEnabled[n: Node] {
-    -- Must be in the process of inserting
-    some nextInsertNode
-
-    n.color = Red
-    some n.grandparent
-
-    -- If n's parent is black, there is no fixing required, so therefore no rotation happens
-    -- If n is not the root and the parent is also Red, then rotation/recoloring must take place 
-    n.parent.color = Red
-
-    -- Uncle is either missing or is Black (otherwise only recoloring is needed)
-    no n.uncle or n.uncle.color = Black
-}
-
-pred rotate[n : Node] {
-    rotateEnabled[n]
-
-    -- Since parent is red, and n is red, the coloring is violated
-    -- Grandparent must always be black, since parent is red
-    -- Uncle may be missing
-
-    type' = type
-    nullNode' = nullNode
-    
-    let p = n.parent, g = n.grandparent, u = n.uncle | {
-        -- Let everything else stay the same
-        -- Uncle does not change in this case
-        all o: Node | (o not in (n + p + g + g.parent)) => {
-            o.left' = o.left
-            o.right' = o.right
-            o.color' = o.color
-        }
-
-        -- Left Left case
-        (g.left.left = n) => {
-            -- Replace grandparent with parent
-            replaceGrandparent[g, p]
-
-            p.left' = n
-            p.right' = g
-            p.color' = Black
-
-            g.left' = p.right
-            g.right' = u
-            g.color' = Red
-
-            // n does not change
-            n.left' = n.left
-            n.right' = n.right
-            n.color' = n.color
-        }
-
-        -- Left Right case
-        (g.left.right = n) => {
-            -- Replace the grandparent with n
-            replaceGrandparent[g, n]
-
-            n.left' = p
-            n.right' = g
-            n.color' = Black
-
-            p.left' = p.left
-            p.right' = n.left
-            p.color' = Red
-
-            g.left' = n.right
-            g.right' = u
-            g.color' = Red
-        }
-
-        -- Right Right case
-        (g.right.right = n) => {
-            -- Replace grandparent with parent
-            replaceGrandparent[g, p]
-
-            p.left' = g
-            p.right' = n
-            p.color' = Black
-
-            g.left' = u
-            g.right' = p.left
-            g.color' = Red
-
-            n.left' = n.left
-            n.right' = n.right
-            n.color' = n.color
-        }
-
-        -- Right Left case
-        (g.right.left = n) => {
-            replaceGrandparent[g, n]
-
-            n.left' = g
-            n.right' = p
-            n.color' = Black
-
-            g.left' = u
-            g.right' = n.left
-            g.color' = Red
-
-            p.left' = n.right
-            p.right' = p.right
-            p.color' = p.color
-        }
-    }
-}
-
-// Get next node that is violating wellformed
-fun nextInsertNode: lone Node {
-    {root.color = Red} => root
-    else { n : Node | n.parent.color = Red and n.color = Red }
-}
-
-pred terminate_transition {
-    // Don't terminate until done inserting
-    no nextInsertNode
-    // Don't terminate until done deleting
-    no dbNode
-
-    left' = left
-    right' = right
-    value' = value
-    color' = color
-    rootNode' = rootNode
-
-    type' = type
-    nullNode' = nullNode
-}
-
-pred rotate_transition {    
-    // implies that tree isn't wellformed
-    // TODO: Test that we only have one of these at any given time
-    rotate[nextInsertNode]
-}
-
-pred recolor_transition {
-    recolor[nextInsertNode]
-}
-
-pred insert_transition {
-    some n: Node | insert[n]
-}
-
 pred delete_transition {
     some n: Node | delete[n]
 }
@@ -792,7 +517,7 @@ pred delete_recolor_transition {
     recolorDelete
 }
 
-pred traces {
+pred traces_del {
     wellformed_rb
 
     always {
@@ -807,4 +532,4 @@ pred traces {
     }
 }
 
-run { traces } for exactly 6 Node
+run { traces_del } for exactly 6 Node

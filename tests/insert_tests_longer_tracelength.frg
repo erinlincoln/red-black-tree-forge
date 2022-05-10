@@ -1,7 +1,9 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "tree_electrum.frg"
-open "red_black.frg"
+open "../src/tree_electrum.frg"
+open "../src/insert.frg"
+
+// Insert property tests with longer tracelengths for RBTs.
 
 option max_tracelength 5
 
@@ -28,11 +30,13 @@ test expect {
                 -- Only rotate or recolor when the current state is not well-formed
                 (rotate_transition or recolor_transition) => not wellformed_rb
 
-                // -- eventually wellformed_rb after delete
-                delete_transition => eventually wellformed_rb
 
-                // -- only delete_recolor when current state is not wellformed
-                delete_recolor_transition => not wellformed_rb
+                -- TODO: NEED TO MOVE TO DELETE TESTS
+                // // -- eventually wellformed_rb after delete
+                // delete_transition => eventually wellformed_rb
+
+                // // -- only delete_recolor when current state is not wellformed
+                // delete_recolor_transition => not wellformed_rb
             }
         }
     } for exactly 4 Node is theorem

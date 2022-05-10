@@ -1,12 +1,13 @@
 #lang forge
 
-open "tree_static.frg"
+open "tree_electrum.frg"
 
 option problem_type temporal
 option max_tracelength 6
 
-// Models a regular binary tree lookup algorithm and
-// proves worst-case algorithm complexity on a RBT
+// Models a regular binary tree lookup algorithm and proves worst-case algorithm 
+// complexity on a RBT. Included to prove lookup complexity in modeled RBT
+// matches expected complexity.
 
 one sig Lookup {
   var step: one Int,
@@ -49,6 +50,14 @@ pred lookup_complete_transition {
 }
 
 pred lookup_transition {
+  // Tree structure stays the same
+  rootNode' = rootNode
+  left' = left
+  right' = right
+  color' = color
+  type' = type
+  nullNode' = nullNode
+
   left_lookup_transition or
   right_lookup_transition or
   lookup_complete_transition
@@ -97,7 +106,7 @@ test expect {
 
   complexity4: {
     lookup_traces => complexity <= 4
-  } for 8 Node is theorem
+  } for 7 Node is theorem
   // Could do 9 Node but that takes too long
 
 }
