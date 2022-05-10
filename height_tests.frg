@@ -3,7 +3,10 @@
 // Static (non-electrum) tests that demonstrate the maximum height
 // of a RBT for a given number of nodes
 
-open "tree_static.frg"
+open "tree_electrum.frg"
+
+// Since these tests are on static trees, just use one instance
+option max_tracelength 1
 
 fun leaves: set Node {
   treeNode - (left + right).Node
@@ -54,7 +57,7 @@ test expect {
 
   maxHeight4: {
     wellformed_rb => height <= 3
-  } for 8 Node is theorem
+  } for 7 Node is theorem
   // Could do 9 Node but that takes too long
 
   // These take too long:

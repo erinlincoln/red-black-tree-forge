@@ -2,45 +2,6 @@
 
 open "tree_electrum.frg"
 
-fun grandparent: set Node -> Node {
-    parent.parent
-}
-
-fun sibling: set Node -> Node {
-    { n, sib : Node | {
-        sib != n
-        sib in n.parent.immediateChildren}
-    }
-}
-
-fun farNephew: set Node -> Node {
-    { n, nephew : Node | {
-        n.parent.left = n => {
-            n.sibling.right = nephew
-        } else {
-            n.sibling.left = nephew
-        }
-    }}
-}
-
-fun nearNephew: set Node -> Node {
-    { n, nephew : Node | {
-        n.parent.left = n => {
-            n.sibling.left = nephew
-        } else {
-            n.sibling.right = nephew
-        }
-    }}
-}
-
-// The sibling of a node's parent
-fun uncle: set Node -> Node {
-    // Include both of the grandparent's immediate children, but remove the parent,
-    // thus there is at most a single uncle for every node
-    grandparent.immediateChildren - parent
-}
-
--- CHANGED - added else
 // Algorithms
 fun inorderSuccessor: set Node -> Node {
    some { n, succ : Node | succ in n.right.^left and no succ.left } => { n, succ : Node | succ in n.right.^left and no succ.left }
@@ -205,7 +166,7 @@ pred delete[n : Node] {
     }
 
     // all o : Node | (o not in (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
-    all o : Node | (o not in (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
+    all o : Node - (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent) | {
         o.left' = o.left
         o.right' = o.right
     }
@@ -574,7 +535,7 @@ pred insert[n : Node] {
     no nextInsertNode
 
     -- New node is not in the current tree
-    not (n in treeNode)
+    n not in treeNode
 
     -- New node is in the next state
     n in treeNode'
