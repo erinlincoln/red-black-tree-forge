@@ -66,15 +66,13 @@ One of the main properties we were able to check is that an `insert_transition` 
 
 We also were able to show specific properties related to the insertion algorithm. We showed that `rotate_transition` or `recolor_transition` only happens when the tree is not wellformed. This shows that we never have an unnecessary rotate or recoloring when the tree is already wellformed.
 
-TODO: EXPLAIN THAT THIS DIDNT QUITE HAPPEN (Julia)
+Lastly, we sought to test similar properties for the deletion algorithm. However, with deletion (as this part of the algorithm was in our reach) it is not entirely complete and so the properties do not pass for more than four nodes. That being said, here are the properties we wanted to show:
 
-Lastly, we were able to test similar properties for the deletion algorithm.
+First, we included a test that a `delete_transition implies eventually wellformed_rb`. Just as with insertion, this would that once deletion has begun, the algorithm will always complete such that the tree is a wellformed_rb tree.
 
-First, we showed that a `delete_transition implies eventually wellformed_rb`. Just as with insertion, this shows that once deletion has begun, the algorithm will always complete such that the tree is a wellformed_rb tree.
+Second, we also included a test that `delete_recolor_transition implies not wellformed_rb`. This shows that recoloring only happens when the tree is not wellformed.
 
-Second, we also showed that `delete_recolor_transition implies not wellformed_rb`. This shows that recoloring only happens when the tree is not wellformed.
-
-It is important to note that when running the deletion adds a significant time complexity. Thus, to be able to run the tracesBehavior test with reasonable runtime the number of nodes we recommend is 6. However, for the insertion predicates (if you comment out the deletion related code in traces and the tests) are able to run with a relatively reasonable time for 6 Nodes.
+It is important to note that when running the deletion adds a significant time complexity. Thus, to be able to run the tracesBehavior test with reasonable runtime the number of nodes we recommend is 4. However, for the insertion predicates (if you comment out the deletion related code in traces and the tests) are able to run with a relatively reasonable time for 6 Nodes.
 
 ### Runtime properties
 
@@ -124,7 +122,7 @@ One of the major assumptions we made in the design of our model is that if a nod
 
 ## Challenges
 
-(Julia)
+As mentioned briefly earlier, the main area we had trouble was deletion. This part of the algorithm is both more complex and was also one of our reach goals—thus giving us less time to complete it-and we therefore did not entirely model the algorithm. We have the general structure outlined (the delete_transition and delete_recolor_transition predicates in traces) and simple cases work. However, as we have shown with tests that we have left commented out, all of the cases of the deletion algorithm that should be SAT are not necessarily SAT. One of the things tht made this particularly challenging, is the fact that the complex nature of the algorithm greatly impacted our efficiency. Thus, debugging became more challenging as running the code and finding counter examples would take a long time.  We still included the code that we were able to put together in order to show how deletion could be modeled given more time.
 
 ## Adjustments from Proposal
 
