@@ -2,8 +2,8 @@
 
 // Tests for the basic BST insertion
 
-open "tree_electrum.frg"
-open "red_black.frg"
+open "../src/tree_electrum.frg"
+open "../src/insert.frg"
 
 // Use a trace length of 2, which is enough to prove properties by induction
 // Put longer tests in another file

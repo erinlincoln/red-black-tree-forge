@@ -1,9 +1,12 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "tree_electrum.frg"
-open "red_black.frg"
+open "../src/tree_electrum.frg"
+open "../src/delete.frg"
 
-// Tests for deletion in red-black tree
+// General tests for deletion in a red black tree. Currently shows examples
+// that cover each case of deletion and general case and property theorem
+// tests. Note: commented out tests indicate that the test is failing. Delete
+// still has bugs, causing the tests to fail.
 
 // run {
 //     some n1, n2, n3, n4, n5, n6, n7, db : Node | {
@@ -97,7 +100,7 @@ test expect {
         }
 
         wellformed_rb
-        traces
+        traces_del
         delete_transition
 
     } for exactly 8 Node is sat
@@ -138,7 +141,7 @@ test expect {
         }
 
         wellformed_rb
-        traces
+        traces_del
         delete_transition
 
     } for exactly 8 Node is sat
@@ -177,7 +180,7 @@ test expect {
 
         }
 
-        traces
+        traces_del
         delete_transition
         next_state delete_recolor_transition
 
@@ -235,7 +238,7 @@ test expect {
 
         }
 
-        traces
+        traces_del
         delete_transition
         next_state delete_recolor_transition
         next_state delete_recolor_transition
@@ -289,21 +292,21 @@ test expect {
 test expect {
     // vacuous: can delete
     vacuous: {
-        traces
+        traces_del
         delete_transition
     } is sat
 
     // CASES
     // cannot delete in empty tree
     cannotDeleteEmpty : {
-        traces
+        traces_del
         no root
         some n : Node | delete[n]
     } for exactly 2 Node is unsat
 
     // can delete root node in empty tree
     deleteRootEmpty : {
-        traces
+        traces_del
         some root
         no root.left
         no root.right
@@ -312,7 +315,7 @@ test expect {
 
     // can delete root node in not empty tree
     deleteRootLR : {
-        traces
+        traces_del
         some root.left
         some root.right
         delete[root]
@@ -320,7 +323,7 @@ test expect {
 
     // can delete in 3 node tree
     delete3Nodes : {
-        traces
+        traces_del
         some root.left
         some root.right
         delete_transition
@@ -328,43 +331,43 @@ test expect {
 
     // // can delete in height 3 tree
     deleteHeight3: {
-        traces
+        traces_del
         #{treeNode} = 7
         delete_transition
     } for exactly 8 Node is sat
 
     // can delete such that there is no recolor or rotation
     deleteNoRecolorNoRotation: {
-        traces
+        traces_del
         delete_transition
         not (eventually delete_recolor_transition)
-        not (eventually rotate_transition)
+        not (eventually del_rotate_transition)
     } for exactly 3 Node is sat
 
     // can delete node with children
     deleteWithChildren: {
-        traces
+        traces_del
         some n : Node | {delete[n] and some n.children}
     } for exactly 5 Node is sat
 
     // PROPERTIES
     // deletion eventually means wellformed
     deleteToWellformed: {
-        traces => {
+        traces_del => {
             delete_transition => eventually wellformed_rb
         }
     } is theorem
 
     // double black node implies not wellformed
     dbNotWellformed: {
-        traces => {
+        traces_del => {
             some dbNode => not wellformed_rb
         }
     } is theorem
 
     // if a node is db, it will eventually not be in tree
     dbToOutOfTree: {
-        traces => {
+        traces_del => {
             some dbNode => eventually no dbNode
         }
     } is theorem
@@ -373,7 +376,7 @@ test expect {
     
     // can't delete a node not in tree
     cannotDeleteOutOfTree: {
-        traces => { all n: {Node - treeNode} | {
+        traces_del => { all n: {Node - treeNode} | {
             not delete[n]
         } }
     } is theorem

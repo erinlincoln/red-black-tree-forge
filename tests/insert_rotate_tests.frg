@@ -2,8 +2,8 @@
 
 // Tests for rotating after insertion
 
-open "tree_electrum.frg"
-open "red_black.frg"
+open "../src/tree_electrum.frg"
+open "../src/insert.frg"
 
 option problem_type temporal
 option max_tracelength 3
