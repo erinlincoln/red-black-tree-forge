@@ -4,7 +4,8 @@ open "tree_electrum.frg"
 
 // Algorithms
 fun inorderSuccessor: set Node -> Node {
-    { n, succ : Node | succ in n.right.^left and no succ.left }
+   some { n, succ : Node | succ in n.right.^left and no succ.left } => { n, succ : Node | succ in n.right.^left and no succ.left }
+   else {n, succ : Node | n.left = succ}
 }
 
 pred delete[n : Node] {
@@ -107,9 +108,15 @@ pred delete[n : Node] {
     some n.left and some n.right => {
         replaceGrandparent[n, n.inorderSuccessor]
 
-        n.inorderSuccessor.left' = n.left
-        n.inorderSuccessor.right' = n.right
-        n.inorderSuccessor.color' = n.color
+        -- CHANGED - added if 
+        n.inorderSuccessor != n.left => {
+            n.inorderSuccessor.left' = n.left
+            n.inorderSuccessor.right' = n.right
+            n.inorderSuccessor.color' = n.color
+        } else {
+            n.inorderSuccessor.right' = n.right
+            n.inorderSuccessor.color' = n.color
+        }
 
         n.left != n.inorderSuccessor => {
             n.left.color' = n.left.color
@@ -127,12 +134,23 @@ pred delete[n : Node] {
                 no db.left'
                 no db.right'
 
-                n.inorderSuccessor.parent.left = n.inorderSuccessor => {
-                    n.inorderSuccessor.parent.left' = db
-                    n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+                -- CHANGED!! added if line below
+                n.inorderSuccessor.parent != n => {
+                    n.inorderSuccessor.parent.left = n.inorderSuccessor => {
+                        n.inorderSuccessor.parent.left' = db
+                        n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+                    } else {
+                        n.inorderSuccessor.parent.right' = db
+                        n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+                    }
                 } else {
-                    n.inorderSuccessor.parent.right' = db
-                    n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+                    n.inorderSuccessor.parent.left = n.inorderSuccessor => {
+                        n.inorderSuccessor.left' = db
+                        n.inorderSuccessor.right' = n.right
+                    } else {
+                        n.inorderSuccessor.right' = db
+                        n.inorderSuccessor.left' = n.left
+                    }
                 }
             }
         } else {
@@ -153,8 +171,9 @@ pred delete[n : Node] {
         o.right' = o.right
     }
 
+    // CHANGED -- added subtracting set of color'
     -- Color stays the same except the left and right
-    color' = color - (n.left -> Color + n.right -> Color)
+    color' - (n.left -> Color + n.right -> Color) = color - (n.left -> Color + n.right -> Color)
 
     -- Type and Null stay the same
     type' = type
