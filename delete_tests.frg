@@ -286,95 +286,95 @@ test expect {
 }
 
 
-// test expect {
-//     // vacuous: can delete
-//     vacuous: {
-//         traces
-//         delete_transition
-//     } is sat
+test expect {
+    // vacuous: can delete
+    vacuous: {
+        traces
+        delete_transition
+    } is sat
 
-//     // CASES
-//     // cannot delete in empty tree
-//     cannotDeleteEmpty : {
-//         traces
-//         no root
-//         some n : Node | delete[n]
-//     } for exactly 2 Node is unsat
+    // CASES
+    // cannot delete in empty tree
+    cannotDeleteEmpty : {
+        traces
+        no root
+        some n : Node | delete[n]
+    } for exactly 2 Node is unsat
 
-//     // can delete root node in empty tree
-//     deleteRootEmpty : {
-//         traces
-//         some root
-//         no root.left
-//         no root.right
-//         delete_transition
-//     } for exactly 2 Node is sat
+    // can delete root node in empty tree
+    deleteRootEmpty : {
+        traces
+        some root
+        no root.left
+        no root.right
+        delete_transition
+    } for exactly 2 Node is sat
 
-//     // can delete root node in not empty tree
-//     deleteRootLR : {
-//         traces
-//         some root.left
-//         some root.right
-//         delete[root]
-//     } for exactly 4 Node is sat
+    // can delete root node in not empty tree
+    deleteRootLR : {
+        traces
+        some root.left
+        some root.right
+        delete[root]
+    } for exactly 4 Node is sat
 
-//     // can delete in 3 node tree
-//     delete3Nodes : {
-//         traces
-//         some root.left
-//         some root.right
-//         delete_transition
-//     } for exactly 4 Node is sat
+    // can delete in 3 node tree
+    delete3Nodes : {
+        traces
+        some root.left
+        some root.right
+        delete_transition
+    } for exactly 4 Node is sat
 
-//     // // can delete in height 3 tree
-//     deleteHeight3: {
-//         traces
-//         #{treeNode} = 7
-//         delete_transition
-//     } for exactly 8 Node is sat
+    // // can delete in height 3 tree
+    deleteHeight3: {
+        traces
+        #{treeNode} = 7
+        delete_transition
+    } for exactly 8 Node is sat
 
-//     // can delete such that there is no recolor or rotation
-//     deleteNoRecolorNoRotation: {
-//         traces
-//         delete_transition
-//         not (eventually delete_recolor_transition)
-//         not (eventually rotate_transition)
-//     } for exactly 3 Node is sat
+    // can delete such that there is no recolor or rotation
+    deleteNoRecolorNoRotation: {
+        traces
+        delete_transition
+        not (eventually delete_recolor_transition)
+        not (eventually rotate_transition)
+    } for exactly 3 Node is sat
 
-//     // can delete node with children
-//     deleteWithChildren: {
-//         traces
-//         some n : Node | {delete[n] and some n.children}
-//     } for exactly 5 Node is sat
+    // can delete node with children
+    deleteWithChildren: {
+        traces
+        some n : Node | {delete[n] and some n.children}
+    } for exactly 5 Node is sat
 
-//     // PROPERTIES
-//     // deletion eventually means wellformed
-//     deleteToWellformed: {
-//         traces => {
-//             delete_transition => eventually wellformed_rb
-//         }
-//     } is theorem
+    // PROPERTIES
+    // deletion eventually means wellformed
+    deleteToWellformed: {
+        traces => {
+            delete_transition => eventually wellformed_rb
+        }
+    } is theorem
 
-//     // double black node implies not wellformed
-//     dbNotWellformed: {
-//         traces => {
-//             some dbNode => not wellformed_rb
-//         }
-//     } is theorem
+    // double black node implies not wellformed
+    dbNotWellformed: {
+        traces => {
+            some dbNode => not wellformed_rb
+        }
+    } is theorem
 
-//     // if a node is db, it will eventually not be in tree
-//     dbToOutOfTree: {
-//         traces => {
-//             some dbNode => eventually no dbNode
-//         }
-//     } is theorem
+    // if a node is db, it will eventually not be in tree
+    dbToOutOfTree: {
+        traces => {
+            some dbNode => eventually no dbNode
+        }
+    } is theorem
 
-//     // cannot insert while performing deletion and vice versa
+    // cannot insert while performing deletion and vice versa
     
-//     // can't delete a node not in tree
-//     cannotDeleteOutOfTree: {
-//         traces => { all n: {Node - treeNode} | {
-//             not delete[n]
-//         } }
-//     } is theorem
-// }
+    // can't delete a node not in tree
+    cannotDeleteOutOfTree: {
+        traces => { all n: {Node - treeNode} | {
+            not delete[n]
+        } }
+    } is theorem
+}
