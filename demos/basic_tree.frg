@@ -27,5 +27,5 @@ run {
       color = (z + m6 + m3 + m2 + m1 + p1 + p2 + p3) -> Black +
               (m8 + m7 + m5 + m4) -> Red
     }
-    traces
+    insertTraces
 } for exactly 12 Node

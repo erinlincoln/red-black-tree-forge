@@ -21,7 +21,7 @@ run {
 
       color = (n1 + n4 + n5 + n6 + n7) -> Black + (n2 + n3 + n8) -> Red
     }
-    traces
-    insert_transition
-    next_state terminate_transition
+    insertTraces
+    insertTransition
+    next_state terminateTransition
 } for exactly 8 Node

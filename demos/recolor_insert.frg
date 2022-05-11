@@ -20,8 +20,8 @@ run {
 
       color = (n1 + n2 + n3) -> Black + (n4 + n5 + n6) -> Red
     }
-    traces
-    insert_transition
-    next_state recolor_transition
-    next_state next_state terminate_transition
+    insertTraces
+    insertTransition
+    next_state insertRecolorTransition
+    next_state next_state terminateTransition
 } for exactly 6 Node

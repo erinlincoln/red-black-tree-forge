@@ -32,11 +32,11 @@ run {
     }
 
     wellformed_rb
-    traces
+    insertTraces
 
-    insert_transition
-    next_state recolor_transition
-    next_state next_state rotate_transition
+    insertTransition
+    next_state insertRecolorTransition
+    next_state next_state insertRotateTransition
     } for exactly 12 Node
 
 inst TallTree {
@@ -95,10 +95,10 @@ test expect {
     }
 
     wellformed_rb
-    traces
+    insertTraces
 
-    insert_transition
-    next_state recolor_transition
-    next_state next_state rotate_transition
+    insertTransition
+    next_state insertRecolorTransition
+    next_state next_state insertRotateTransition
   } for exactly 12 Node is sat
 }
