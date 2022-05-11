@@ -18,7 +18,7 @@ pred insert[n : Node] {
     n in treeNode'
 
     -- New node must not be DoubleBlack
-    n.type = Single
+    no n.type
 
     -- All colors stay the same except
     -- the new node is red
@@ -59,7 +59,7 @@ pred insert[n : Node] {
     }
 }
 
-pred recolorEnabled[n: Node] {
+pred insertRecolorEnabled[n: Node] {
     -- Must be in the process of inserting
     some nextInsertNode
 
@@ -69,8 +69,8 @@ pred recolorEnabled[n: Node] {
     n.uncle.color = Red or (no n.uncle and no n.grandparent)
 }
 
-pred recolor[n: Node] {
-    recolorEnabled[n]
+pred insertRecolor[n: Node] {
+    insertRecolorEnabled[n]
 
     root' = root
     left' = left
@@ -115,7 +115,7 @@ pred replaceGrandparent[prev: Node, next: Node] {
     }
 }
 
-pred rotateEnabled[n: Node] {
+pred insertRotateEnabled[n: Node] {
     -- Must be in the process of inserting
     some nextInsertNode
 
@@ -130,8 +130,8 @@ pred rotateEnabled[n: Node] {
     no n.uncle or n.uncle.color = Black
 }
 
-pred rotate[n : Node] {
-    rotateEnabled[n]
+pred insertRotate[n : Node] {
+    insertRotateEnabled[n]
 
     -- Since parent is red, and n is red, the coloring is violated
     -- Grandparent must always be black, since parent is red
@@ -224,12 +224,19 @@ pred rotate[n : Node] {
 }
 
 // Get next node that is violating wellformed
+// This node is used for identifying which node(s) must be
+// rotated or recolored
 fun nextInsertNode: lone Node {
     {root.color = Red} => root
     else { n : Node | n.parent.color = Red and n.color = Red }
 }
 
-pred terminate_transition {
+pred init {
+    wellformed_rb
+    Tree.step = 0
+}
+
+pred terminateTransition {
     // Don't terminate until done inserting
     no nextInsertNode
     // Don't terminate until done deleting
@@ -240,36 +247,33 @@ pred terminate_transition {
     value' = value
     color' = color
     rootNode' = rootNode
+    step' = step
 
     type' = type
     nullNode' = nullNode
 }
 
-pred rotate_transition {    
-    // implies that tree isn't wellformed
-    // TODO: Test that we only have one of these at any given time
-    rotate[nextInsertNode]
+pred insertRotateTransition {
+    insertRotate[nextInsertNode]
+    Tree.step' = add[Tree.step, 1]
 }
 
-pred recolor_transition {
-    recolor[nextInsertNode]
+pred insertRecolorTransition {
+    insertRecolor[nextInsertNode]
+    Tree.step' = add[Tree.step, 1]
 }
 
-pred insert_transition {
+pred insertTransition {
     some n: Node | insert[n]
+    Tree.step' = add[Tree.step, 1]
 }
 
-pred traces {
-    wellformed_rb
-
-    always {
-        (
-            insert_transition or
-            rotate_transition or
-            recolor_transition or
-            terminate_transition
-        )
-    }
+pred insertTraces {
+    init
+    always (
+        insertTransition or
+        insertRotateTransition or
+        insertRecolorTransition or
+        terminateTransition
+    )
 }
-
-run { traces } for exactly 6 Node

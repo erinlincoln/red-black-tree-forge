@@ -7,48 +7,69 @@ open "../src/insert.frg"
 
 option max_tracelength 5
 
+// Specific trace that forces their to be only a single insert operation
+// Allows us to examine runtime complexity of an insert operation
+pred simpleInsertTrace {
+    init
+    insertTransition
+    always (
+        insertRotateTransition or
+        insertRecolorTransition or
+        terminateTransition
+    )
+}
+
+
+
 test expect {
+    vacuous: {
+        insertTraces
+        eventually { insertTransition }
+    } for exactly 1 Node is sat
+
     // PROPERTY TESTS
-
-    // some nextInsertNode implies tree is not wellformed
-    nextInsertImpliesWellformed: {
-        some nextInsertNode => not wellformed_rb
-    } is theorem
-
     tracesBehavior: {
-        traces => {
-            always {
-                -- binary tree always maintained
-                wellformed_binary
+        insertTraces => always {
+            -- binary tree always maintained at each intermediate step
+            wellformed_binary
 
-                -- terminate transition implies wellformed red-black
-                terminate_transition => wellformed_rb
+            -- at the end, we have a wellformed red-black tree
+            terminateTransition => wellformed_rb
 
-                -- insert implies will reach wellformed red-black
-                insert_transition => eventually wellformed_rb
+            -- if we do an insert, we will eventually have a wellformed red-black tree
+            insertTransition => eventually wellformed_rb
 
-                -- Only rotate or recolor when the current state is not well-formed
-                (rotate_transition or recolor_transition) => not wellformed_rb
+            -- only rotate or recolor when the current state is not well-formed
+            (insertRotateTransition or insertRecolorTransition) => not wellformed_rb
 
+            -- TODO: NEED TO MOVE TO DELETE TESTS
+            // // eventually wellformed_rb after delete
+            // delete_transition => eventually wellformed_rb
 
-                -- TODO: NEED TO MOVE TO DELETE TESTS
-                // // -- eventually wellformed_rb after delete
-                // delete_transition => eventually wellformed_rb
-
-                // // -- only delete_recolor when current state is not wellformed
-                // delete_recolor_transition => not wellformed_rb
-            }
+            // // only delete_recolor when current state is not wellformed
+            // delete_recolor_transition => not wellformed_rb
         }
-    } for exactly 4 Node is theorem
+    } for 6 Node is theorem
 
     canInsertWithoutRecolorOrRotate: {
-        traces
+        insertTraces
 
         some Tree.rootNode
         some Tree.rootNode.left
         some Tree.rootNode.right
 
-        insert_transition
-        next_state terminate_transition
+        insertTransition
+        next_state terminateTransition
     } for exactly 4 Node is sat
+
+    complexInsert: {
+        simpleInsertTrace
+        eventually (Tree.step = 3)
+    } for exactly 5 Node is sat
+
+    insertComplexity: {
+        simpleInsertTrace => {
+            always (Tree.step <= 3)
+        }
+    } for 5 Node is theorem
 }

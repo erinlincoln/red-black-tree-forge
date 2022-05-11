@@ -9,18 +9,16 @@ sig Node {
     var right: lone Node,
     var color: one Color,
 
-    var type: one Type,
-    var nullNode: one NullNode
+    var type: lone DoubleBlack,
+    var nullNode: lone IsNull
 }
 
-abstract sig Type {}
-one sig Single, DoubleBlack extends Type {}
-
-abstract sig NullNode {}
-one sig IsNull, NotNull extends NullNode {}
+one sig DoubleBlack {}
+one sig IsNull {}
 
 one sig Tree {
-    var rootNode: lone Node
+    var rootNode: lone Node,
+    var step: one Int
 }
 
 // Color of nodes
@@ -184,7 +182,5 @@ pred wellformed_rb {
     // NIL leaves are implicitly treated as black
 
     -- included for delete:
-    all n : treeNode | {
-        n.type = Single
-    }
+    no treeNode.type
 }

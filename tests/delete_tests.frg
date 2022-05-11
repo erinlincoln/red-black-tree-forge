@@ -2,6 +2,7 @@
 
 open "../src/tree_electrum.frg"
 open "../src/delete.frg"
+open "../src/insert.frg"
 
 // General tests for deletion in a red black tree. Currently shows examples
 // that cover each case of deletion and general case and property theorem
@@ -17,8 +18,8 @@ open "../src/delete.frg"
 //             // left = n1 -> n2  // + n2 -> n4 + n3 -> n6
 //             // right = n1 -> n3 // + n2 -> n5 + n3 -> n7
 //             color = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + db) -> Black
-//             type = (n1 + n2 + n3 + n4 + n5 + n6 + n7) -> Single + db -> DoubleBlack
-//             nullNode = (n1 + n2 + n3 + n4 + n5 + n6 + n7) -> NotNull + db->IsNull
+//             type = db -> DoubleBlack
+//             nullNode = db->IsNull
 
 //             // // replace 2 (n6) with db
 //             value' = value
@@ -33,7 +34,7 @@ open "../src/delete.frg"
 //             // left = n1 -> n2 + n2 -> n4
 //             // right'' = right
 //             // color'' = (n7) -> Red + (n1 + n2 + n3 + n4 + n5 + n6 + n7 + db) -> Black
-//             // type'' = (n1 + n2 + n4 + n5 + n6 + n7) -> Single + (db + n3) -> DoubleBlack
+//             // type'' = (db + n3) -> DoubleBlack
 //             nullNode'' = nullNode
 
 //             // // case 3: root becomes db
@@ -41,7 +42,7 @@ open "../src/delete.frg"
 //             // left''' = left''
 //             // right''' = right
 //             // color''' = color''
-//             // type''' = (n2 + n3+ n4 + n5 + n6 + n7) -> Single + (db + n1) -> DoubleBlack
+//             // type''' = (db + n1) -> DoubleBlack
 //             nullNode''' = nullNode
 
 //             // // case 2: root becomes black
@@ -83,8 +84,8 @@ test expect {
 
             color = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-            type = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) -> Single
-            nullNode = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) -> NotNull
+            no type
+            no nullNode
 
             // delete n8
             value' = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
@@ -95,8 +96,8 @@ test expect {
 
             color' = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-            type' = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) -> Single
-            nullNode' = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) -> NotNull
+            no type
+            no nullNode
         }
 
         wellformed_rb
@@ -124,8 +125,8 @@ test expect {
 
             color = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-            type = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) -> Single
-            nullNode = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) -> NotNull
+            no type
+            no nullNode
 
             // replace n3 (3) with n8 (4) and delete duplicate n8
             value' = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
@@ -136,8 +137,8 @@ test expect {
 
             color' = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-            type' = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) -> Single
-            nullNode' = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) -> NotNull
+            no type
+            no nullNode
         }
 
         wellformed_rb
@@ -159,8 +160,8 @@ test expect {
             left = n1 -> n2 + n3 -> n4
             right = n1 -> n3 + n3 -> n5
             color = (n1 + n2 + n4 + n5 + db) -> Black + (n3) -> Red
-            type = (n1 + n2 + n3 + n4 + n5) -> Single + (db) -> DoubleBlack
-            nullNode = (n1 + n2 + n3 + n4 + n5) -> NotNull + (db) -> IsNull
+            type = db -> DoubleBlack
+            nullNode = db -> IsNull
 
             // 2 (n4) is replaced with dn
             value' = value
@@ -180,9 +181,10 @@ test expect {
 
         }
 
-        traces_del
+        init
         delete_transition
         next_state delete_recolor_transition
+        next_state next_state terminateTransition
 
     } for exactly 6 Node is sat
 
@@ -202,8 +204,8 @@ test expect {
             // left = n1 -> n2 + n2 -> n4 + n3 -> n6
             // right = n1 -> n3 + n2 -> n5 + n3 -> n7
             color = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + db) -> Black
-            type = (n1 + n2 + n3 + n4 + n5 + n6 + n7) -> Single + db -> DoubleBlack
-            nullNode = (n1 + n2 + n3 + n4 + n5 + n6 + n7) -> NotNull + db->IsNull
+            type = db -> DoubleBlack
+            nullNode = db->IsNull
 
             // // replace 2 (n6) with db
             value' = value
@@ -218,7 +220,7 @@ test expect {
             // left = n1 -> n2 + n2 -> n4
             // right'' = right
             // color'' = (n7) -> Red + (n1 + n2 + n3 + n4 + n5 + n6 + n7 + db) -> Black
-            // type'' = (n1 + n2 + n4 + n5 + n6 + n7) -> Single + (db + n3) -> DoubleBlack
+            // type'' = (db + n3) -> DoubleBlack
             nullNode'' = nullNode
 
             // // case 3: root becomes db
@@ -226,7 +228,7 @@ test expect {
             // left''' = left''
             // right''' = right
             // color''' = color''
-            // type''' = (n2 + n3+ n4 + n5 + n6 + n7) -> Single + (db + n1) -> DoubleBlack
+            // type''' = (db + n1) -> DoubleBlack
             nullNode''' = nullNode
 
             // // case 2: root becomes black
@@ -259,8 +261,8 @@ test expect {
     //         left = n1 -> n2 + n2 -> n4 + n3 -> n6 + n7 -> n8
     //         right = n1 -> n3 + n2 -> n5 + n3 -> n7 + n7 -> n9
     //         color = (n1 + n2 + n3 + n4 + n5 + n6 + n8 + n9 + db) -> Black + (n7) -> Red
-    //         type = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8 + n9) -> Single + db -> DoubleBlack
-    //         nullNode = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8 + n9) -> NotNull + db->IsNull
+    //         type = db -> DoubleBlack
+    //         nullNode = db -> IsNull
 
     //         // replace n6 (2) with db null
     //         value' = value

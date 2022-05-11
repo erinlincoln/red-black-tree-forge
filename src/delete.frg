@@ -73,7 +73,7 @@ pred delete[n : Node] {
 
         n.color = Black and n.right.color = Black => {
             n.right.type' = DoubleBlack
-            n.right.nullNode' = NotNull
+            no n.right.nullNode'
             n.right.color' = Black
         } else {
             n.right.color' = Black
@@ -92,7 +92,7 @@ pred delete[n : Node] {
 
         n.color = Black and n.left.color = Black => {
             n.left.type' = DoubleBlack
-            n.left.nullNode' = NotNull
+            no n.left.nullNode'
         }
         n.left.color' = Black
 
@@ -183,7 +183,7 @@ pred delete[n : Node] {
 
 // PREVENTS IMPORT ISSUES WITH IMPORTING INSERT AND DELETE SIMULTANEOUSLY
 pred del_rotate_transition{
-    rotate_transition
+    insertRotateTransition
 }
 
 pred removeDB[db: Node] {
@@ -211,10 +211,10 @@ pred recolorDelete {
             o.nullNode' = o.nullNode
         }
         db = root => {
-            db.nullNode = NotNull => {
+            (no db.nullNode) => {
                 -- Remove DoubleBlack sign
-                db.type' = Single
-                db.nullNode' = NotNull
+                no db.type'
+                no db.nullNode'
                 root' = root
             } else {
                 removeDB[db]
@@ -274,8 +274,8 @@ pred recolorDelete {
                         db.parent.left' = db.parent.left
                     }
                 } else {
-                    db.type' = Single
-                    db.nullNode' = NotNull
+                    no db.type'
+                    no db.nullNode'
                     db.left' = db.left
                     db.right' = db.right
                     db.color' = db.color
@@ -291,7 +291,7 @@ pred recolorDelete {
                 -- otherwise make parent black
                 db.parent.color = Black => {
                     db.parent.type' = DoubleBlack
-                    db.parent.nullNode' = NotNull
+                    no db.parent.nullNode'
 
                     db.parent.color' = db.parent.color
                 } else {
@@ -475,8 +475,8 @@ pred recolorDelete {
                 db.nullNode = IsNull => {
                     removeDB[db]
                 } else {
-                    db.type' = Single
-                    db.nullNode' = NotNull
+                    no db.type'
+                    no db.nullNode'
                     db.color' = Black
                 }
 
@@ -518,16 +518,16 @@ pred delete_recolor_transition {
 }
 
 pred traces_del {
-    wellformed_rb
+    init
 
     always {
         (
-            insert_transition or
-            rotate_transition or
-            recolor_transition or
+            insertTransition or
+            insertRotateTransition or
+            insertRecolorTransition or
             delete_transition or
             delete_recolor_transition or
-            terminate_transition
+            terminateTransition
         )
     }
 }

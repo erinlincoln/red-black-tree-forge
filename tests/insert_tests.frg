@@ -31,19 +31,17 @@ test expect {
   } for exactly 4 Node is sat
 
   cannotInsertExisting: {
-    wellformed_binary => { all n: treeNode | {
-      not insert[n]
-    } }
-  } for exactly 3 Node is theorem
+    wellformed_binary => { no n: treeNode | insert[n] }
+  } for 4 Node is theorem
 
   insertedNodeIsRedLeaf: {
-    wellformed_binary => { all n: Node | {
-      (insert[n]) => {
+    wellformed_binary => {
+      all n: Node | (insert[n]) => {
         no n.(left' + right')
         n.color' = Red
       }
-    } }
-  } for 3 Node is theorem
+    }
+  } for 4 Node is theorem
 
   insertIncreasesTreeSize: {
     (wellformed_binary and (some n: Node | insert[n])) => {
@@ -54,4 +52,9 @@ test expect {
   insertPreservesWellformedBST: {
       (wellformed_binary and (some n: Node | insert[n])) => next_state wellformed_binary
   } for exactly 6 Node is theorem
+
+  // some nextInsertNode implies tree is not wellformed
+  nextInsertImpliesWellformed: {
+    some nextInsertNode => not wellformed_rb
+  } for 4 Node is theorem
 }
