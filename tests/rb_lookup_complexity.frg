@@ -1,6 +1,6 @@
 #lang forge
 
-open "tree_electrum.frg"
+open "../src/tree_electrum.frg"
 
 option problem_type temporal
 option max_tracelength 6
