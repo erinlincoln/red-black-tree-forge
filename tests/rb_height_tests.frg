@@ -23,51 +23,51 @@ fun height: one Int {
 
 test expect {
   height1: {
-    wellformed_rb
+    wellformedRBT
     height = 0
   } for exactly 1 Node is sat
 
   maxHeight1: {
-    wellformed_rb => height = 0
+    wellformedRBT => height = 0
   } for 1 Node is theorem
 
   height2: {
-    wellformed_rb
+    wellformedRBT
     height = 1
   } for exactly 2 Node is sat
 
   maxHeight2: {
-    wellformed_rb => height <= 1
+    wellformedRBT => height <= 1
   } for 3 Node is theorem
 
   height3: {
-    wellformed_rb
+    wellformedRBT
     height = 2
   } for exactly 4 Node is sat
 
   maxHeight3: {
-    wellformed_rb => height <= 2
+    wellformedRBT => height <= 2
   } for 5 Node is theorem
 
   height4: {
-    wellformed_rb
+    wellformedRBT
     height = 3
   } for exactly 6 Node is sat
 
   maxHeight4: {
-    wellformed_rb => height <= 3
+    wellformedRBT => height <= 3
   } for 7 Node is theorem
   // Could do 9 Node but that takes too long
 
   // These take too long:
   // height5: {
-  //   wellformed_rb
+  //   wellformedRBT
   //   height = 4
   // } for exactly 10 Node is sat*/
 
   //
   // height6: {
-  //   wellformed_rb
+  //   wellformedRBT
   //   height = 5
   // } for exactly 14 Node is sat
 }

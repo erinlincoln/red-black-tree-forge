@@ -87,7 +87,7 @@ test expect {
   } for exactly 4 Node is sat
 
   rotatePreservesAllNodes: {
-    (wellformed_binary and (some n: treeNode | rotate[n])) =>
+    (wellformedBST and (some n: treeNode | rotate[n])) =>
       treeNode' = treeNode
   } for 5 Node is theorem
 }

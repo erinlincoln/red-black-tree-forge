@@ -100,7 +100,7 @@ test expect {
             no nullNode
         }
 
-        wellformed_rb
+        wellformedRBT
         traces_del
         delete_transition
 
@@ -141,7 +141,7 @@ test expect {
             no nullNode
         }
 
-        wellformed_rb
+        wellformedRBT
         traces_del
         delete_transition
 
@@ -356,14 +356,14 @@ test expect {
     // deletion eventually means wellformed
     deleteToWellformed: {
         traces_del => {
-            delete_transition => eventually wellformed_rb
+            delete_transition => eventually wellformedRBT
         }
     } is theorem
 
     // double black node implies not wellformed
     dbNotWellformed: {
         traces_del => {
-            some dbNode => not wellformed_rb
+            some dbNode => not wellformedRBT
         }
     } is theorem
 

@@ -286,7 +286,7 @@ fun nextInsertNode: lone Node {
 // Initialization of a trace
 pred init {
     // Start with a well-formed tree
-    wellformed_rb
+    wellformedRBT
     // Reset the step counter
     Tree.step = 0
 }

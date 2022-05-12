@@ -31,7 +31,7 @@ run {
               (m8 + m7 + m5 + m4) -> Red
     }
 
-    wellformed_rb
+    wellformedRBT
     insertTraces
 
     insertTransition
@@ -64,7 +64,7 @@ inst TallTree {
         + `p3 -> `b
 }
 
-example tallTree is wellformed_rb for TallTree
+example tallTree is wellformedRBT for TallTree
 
 // An example of an insert operation that requires a rotation and a recoloring to
 // restore the RBT properties.
@@ -94,7 +94,7 @@ test expect {
               (m8 + m7 + m5 + m4) -> Red
     }
 
-    wellformed_rb
+    wellformedRBT
     insertTraces
 
     insertTransition

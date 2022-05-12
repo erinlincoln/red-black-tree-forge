@@ -31,23 +31,23 @@ test expect {
     tracesBehavior: {
         insertTraces => always {
             -- binary tree always maintained at each intermediate step
-            wellformed_binary
+            wellformedBST
 
             -- at the end, we have a wellformed red-black tree
-            terminateTransition => wellformed_rb
+            terminateTransition => wellformedRBT
 
             -- if we do an insert, we will eventually have a wellformed red-black tree
-            insertTransition => eventually wellformed_rb
+            insertTransition => eventually wellformedRBT
 
             -- only rotate or recolor when the current state is not well-formed
-            (insertRotateTransition or insertRecolorTransition) => not wellformed_rb
+            (insertRotateTransition or insertRecolorTransition) => not wellformedRBT
 
             -- TODO: NEED TO MOVE TO DELETE TESTS
-            // // eventually wellformed_rb after delete
-            // delete_transition => eventually wellformed_rb
+            // // eventually wellformedRBT after delete
+            // delete_transition => eventually wellformedRBT
 
             // // only delete_recolor when current state is not wellformed
-            // delete_recolor_transition => not wellformed_rb
+            // delete_recolor_transition => not wellformedRBT
         }
     } for 6 Node is theorem
 

@@ -2,20 +2,23 @@
 
 option problem_type temporal
 
-// Node of each graph - left branch, right branch, value, and color
+// Node of a binary tree with color and delete state
 sig Node {
     value: one Int,
     var left: lone Node,
     var right: lone Node,
     var color: one Color,
 
+    // Delete-specific:
     var type: lone DoubleBlack,
     var nullNode: lone IsNull
 }
 
+// Delete-specific
 one sig DoubleBlack {}
 one sig IsNull {}
 
+// State for a tree
 one sig Tree {
     var rootNode: lone Node,
     var step: one Int
@@ -30,16 +33,17 @@ fun root: lone Node {
     Tree.rootNode
 }
 
+// Get both immediate children
 fun immediateChildren: set Node -> Node {
     left + right
 }
 
-// Parent is the transpose of immediateChildren
+// Get the immediate parent of a node
 fun parent: set Node -> Node {
     ~immediateChildren
 }
 
-// Children is *all* children in a node's subtree
+// Get *all* children in a node's subtree
 fun children: set Node -> Node {
     ^immediateChildren
 }
@@ -48,19 +52,23 @@ fun grandparent: set Node -> Node {
     parent.parent
 }
 
-// The sibling of a node's parent
-fun uncle: set Node -> Node {
-    // Include both of the grandparent's immediate children, but remove the parent,
-    // thus there is at most a single uncle for every node
-    grandparent.immediateChildren - parent
-}
-
 // Wanted: X -> S
 //    R    and   R
 //   / \        / \
 //  X   S      S   X
 fun sibling: set Node -> Node {
     (~left).right + (~right).left
+}
+
+// Get the sibling of a node's parent
+// Wanted: X -> U
+//     R
+//    / \
+//   P   U    (and three related configurations)
+//  /
+// X
+fun uncle: set Node -> Node {
+    parent.sibling
 }
 
 // Wanted: X -> N
@@ -109,16 +117,18 @@ fun nearNephew: set Node -> Node {
     // }}
 }
 
+// Get all nodes that are in the tree
 fun treeNode: set Node {
     root + root.children
 }
 
+// Get the node that is marked DoubleBlack
 fun dbNode: lone Node {
     { n : Node | n.type = DoubleBlack and n in treeNode }
 }
 
-// wellformed tree
-pred wellformed_tree {
+// Requires the data to actually be a tree structure
+pred wellformedTree {
     // Everything not in the tree is a lone node
     no (Node - treeNode).immediateChildren
 
@@ -133,12 +143,13 @@ pred wellformed_tree {
     all n: Node | lone n.parent
 }
 
-// wellformed binary search tree
-pred wellformed_binary {
-    // is a wellformed tree
-    wellformed_tree
+// Constrains the data to be a Binary Search Tree
+pred wellformedBST {
+    // Is a wellformed tree
+    wellformedTree
 
-    // Left is less than parent and right is greater than the parent
+    // All values in left tree are less than the parent's value
+    // All values in right tree are greater than the parent's value
     all p: treeNode | {
         all c: (p.left + p.left.children) | c.value < p.value
         all c: (p.right + p.right.children) | c.value > p.value
@@ -153,15 +164,16 @@ fun blackDepth[n: Node]: Int {
     #(color.Black & (n + children.n))
 }
 
-// wellformed red black tree
-pred wellformed_rb {
-    // red-black tree must be a wellformed binary search trees
-    wellformed_binary
+// Constrains the data to be a wellformed Red-Black Tree
+pred wellformedRBT {
+    // Red-Black Tree must be a wellformed binary search trees
+    wellformedBST
 
     // Root, if it exists, is always black
     root.color in Black
 
     // No two adjacent red nodes
+    // In other words, no child of a red node is red
     Red not in ((color.Red).immediateChildren.color)
     //Equivalent for well-formed tree, but slower:
     // all n : treeNode | (n.color = Red) => {
@@ -181,6 +193,7 @@ pred wellformed_rb {
     // We do not include a constraint about the leaf nodes being black because
     // NIL leaves are implicitly treated as black
 
-    -- included for delete:
+    // A wellformed RBT does not contain any DoubleBlack nodes
+    // which can occur during deletion
     no treeNode.type
 }

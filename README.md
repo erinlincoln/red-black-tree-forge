@@ -34,7 +34,7 @@ Finally, we have also implemented a basic search-complexity model. This model im
 
 Wellformed:
 
-Our wellformed predicate is separated into three predicates for our tree: `wellformed_tree`, `wellformed_binary`, `wellformed_rb`. This is because, during transitions of the tree (ie when a node is inserted), the tree is no longer a well-formed red-black tree, however it will still be a wellformed_tree. Thus, we separated out these three predicates so that they can build on each other. A `wellformed_tree` ensures that the nodes do not reach themselves, and that they are all unique in the tree. The `wellformed_binary` predicate ensures that the tree is a wellformed_tree and also that the values follow the laws of a binary tree: the values to the left of a node are all less than their parent and the values to the right of a node are all greater than their parent. Lastly, `wellformed_rb` ensures that the tree is both wellformed_tree and wellformed_binary while also adding the properties of a red-black tree (the root must be black, there cannot be two adjacent red nodes, and any path from a node to a leaf must pass through the same number of black nodes for its left and right children).
+Our wellformed predicate is separated into three predicates for our tree: `wellformedTree`, `wellformedBST`, `wellformedRBT`. This is because, during transitions of the tree (ie when a node is inserted), the tree is no longer a well-formed red-black tree, however it will still be a wellformedTree. Thus, we separated out these three predicates so that they can build on each other. A `wellformedTree` ensures that the nodes do not reach themselves, and that they are all unique in the tree. The `wellformedBST` predicate ensures that the tree is a wellformedTree and also that the values follow the laws of a binary tree: the values to the left of a node are all less than their parent and the values to the right of a node are all greater than their parent. Lastly, `wellformedRBT` ensures that the tree is both wellformedTree and wellformedBST while also adding the properties of a red-black tree (the root must be black, there cannot be two adjacent red nodes, and any path from a node to a leaf must pass through the same number of black nodes for its left and right children).
 
 insertTraces:
 
@@ -44,7 +44,7 @@ In the next states, it ensures that either `insertTransition`, `insertRotateTran
 
 insertTransition:
 
-This predicate is the first step of the insertion algorithm for a red-black tree. When `insertTransition` is satisfied it means that the starting state is a `wellformed_rb` tree, and then next state will have one more node connected to the tree (such that the tree is still a binary search tree). However, the next state will not necessarily be a `wellformed_rb` tree because the insertion algorithm will nto be completed.
+This predicate is the first step of the insertion algorithm for a red-black tree. When `insertTransition` is satisfied it means that the starting state is a `wellformedRBT` tree, and then next state will have one more node connected to the tree (such that the tree is still a binary search tree). However, the next state will not necessarily be a `wellformedRBT` tree because the insertion algorithm will nto be completed.
 
 insertRotateTransition/insertRecolorTransition:
 
@@ -60,11 +60,11 @@ We also have a traces predicate for the deletion algorithm. This predicate funct
 
 delete_transition:
 
-This predicate is the first step of the deletion algorithm for a red-black tree. When the `delete_transition` predicate is satisfied, it ensures that we are starting with a `wellformed_rb` tree. From there, it will delete one of the nodes ensuring that the tree is still a binary search tree. It will also replace the node with a double black node according to the rules of red-black tree deletion.
+This predicate is the first step of the deletion algorithm for a red-black tree. When the `delete_transition` predicate is satisfied, it ensures that we are starting with a `wellformedRBT` tree. From there, it will delete one of the nodes ensuring that the tree is still a binary search tree. It will also replace the node with a double black node according to the rules of red-black tree deletion.
 
 delete_recolor_transition:
 
-This predicate occurs if there is a DoubleBlack node in the tree. It takes the double black node and performs the necessary steps to remove it. The algorithm for deletion outlines various cases on how to handle a DoubleBlack node depending on its positioning, as well as the positioning/color of its sibling node. The predicate will perform the necessary recoloring and rotations. It will remain true until the DoubleBlack node has been removed from the tree and the resulting tree will once again be a `wellformed_rb` tree.
+This predicate occurs if there is a DoubleBlack node in the tree. It takes the double black node and performs the necessary steps to remove it. The algorithm for deletion outlines various cases on how to handle a DoubleBlack node depending on its positioning, as well as the positioning/color of its sibling node. The predicate will perform the necessary recoloring and rotations. It will remain true until the DoubleBlack node has been removed from the tree and the resulting tree will once again be a `wellformedRBT` tree.
 
 ## Testing
 
@@ -72,21 +72,21 @@ This predicate occurs if there is a DoubleBlack node in the tree. It takes the d
 
 By structuring our model this way we were able to test several properties about the insertion and deletion process for red-black trees. These property tests can be found in the file `red_black_tests_longer_tracelength.frg` under tracesBehavior.
 
-The first property that we show is that `wellformed_binary` is always maintained during traces. This is because even though during insertion and deletion the red-black properties are not always there until the process is over, the tree still uses binary insertion and deletion. Thus, the tree will always a binary tree.
+The first property that we show is that `wellformedBST` is always maintained during traces. This is because even though during insertion and deletion the red-black properties are not always there until the process is over, the tree still uses binary insertion and deletion. Thus, the tree will always a binary tree.
 
-Another property we showed is that `terminateTransition implies wellformed_rb`. This means that when nothing changes it should be true that our tree is a proper red-black tree.
+Another property we showed is that `terminateTransition implies wellformedRBT`. This means that when nothing changes it should be true that our tree is a proper red-black tree.
 
 We were also able to show properties that we specific to insertion:
 
-One of the main properties we were able to check is that an `insertTransition` will eventually result in a `wellformed_rb` tree. This means that the insertion algorithm will  always complete and the end state will be a wellformed red-black tree.
+One of the main properties we were able to check is that an `insertTransition` will eventually result in a `wellformedRBT` tree. This means that the insertion algorithm will  always complete and the end state will be a wellformed red-black tree.
 
 We also were able to show specific properties related to the insertion algorithm. We showed that `insertRotateTransition` or `insertRecolorTransition` only happens when the tree is not wellformed. This shows that we never have an unnecessary rotate or recoloring when the tree is already wellformed.
 
 Lastly, we sought to test similar properties for the deletion algorithm. However, with deletion (as this part of the algorithm was in our reach) it is not entirely complete and so the properties do not pass for more than four nodes. That being said, here are the properties we wanted to show:
 
-First, we included a test that a `delete_transition implies eventually wellformed_rb`. Just as with insertion, this would that once deletion has begun, the algorithm will always complete such that the tree is a wellformed_rb tree.
+First, we included a test that a `delete_transition implies eventually wellformedRBT`. Just as with insertion, this would that once deletion has begun, the algorithm will always complete such that the tree is a wellformedRBT tree.
 
-Second, we also included a test that `delete_recolor_transition implies not wellformed_rb`. This shows that recoloring only happens when the tree is not wellformed.
+Second, we also included a test that `delete_recolor_transition implies not wellformedRBT`. This shows that recoloring only happens when the tree is not wellformed.
 
 It is important to note that when running the deletion adds a significant time complexity. Thus, to be able to run the tracesBehavior test with reasonable runtime the number of nodes we recommend is 4. However, for the insertion predicates (if you comment out the deletion related code in traces and the tests) are able to run with a relatively reasonable time for 6 Nodes.
 

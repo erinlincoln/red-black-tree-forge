@@ -15,7 +15,7 @@ pred init_lookup {
   some Node
 
   // Require a valid RBT
-  wellformed_rb
+  wellformedRBT
 
   // All nodes are in the tree
   Node in treeNode
@@ -24,6 +24,7 @@ pred init_lookup {
   Tree.step = 0
 }
 
+// When the
 pred left_lookup_transition {
   some Lookup.current
   Lookup.target < Lookup.current.value
