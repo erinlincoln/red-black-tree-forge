@@ -1,6 +1,6 @@
 #lang forge
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/insert.frg"
 open "../src/delete.frg"
 
@@ -18,5 +18,5 @@ run {
 
         delete[n4]
     }
-    traces_del
+    deleteTraces
 } for 10 Node
