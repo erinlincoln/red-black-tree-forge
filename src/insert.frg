@@ -8,16 +8,16 @@ pred insert[n : Node] {
     // Don't insert until done deleting
     no dbNode
 
-    -- Don't insert until the previous insert is cleaned up
+    // Don't insert until the previous insert is cleaned up
     no nextInsertNode
 
-    -- New node is not in the current tree
+    // New node is not in the current tree
     n not in treeNode
 
-    -- New node must not be DoubleBlack
+    // New node must not be DoubleBlack
     no n.type
 
-    -- All colors stay the same except the new node is red
+    // All colors stay the same except the new node is red
     color' = (color - (n -> Color)) + n -> Red
 
     // Delete state stays the same
@@ -65,7 +65,7 @@ pred insert[n : Node] {
 
 // Guard conditions for `insertRecolor`
 pred insertRecolorEnabled[n: Node] {
-    -- Must be in the process of inserting
+    // Must be in the process of inserting
     some nextInsertNode
 
     // Only recolor a red Node
@@ -139,7 +139,7 @@ pred replaceGrandparent[prev: Node, next: Node] {
 
 // Guard conditions for insertRotate
 pred insertRotateEnabled[n: Node] {
-    -- Must be in the process of inserting
+    // Must be in the process of inserting
     some nextInsertNode
 
     // Only rotate at a red node
@@ -148,42 +148,42 @@ pred insertRotateEnabled[n: Node] {
     // Only rotate if third-level or deeper
     some n.grandparent
 
-    -- If n's parent is black, there is no fixing required, so therefore no rotation happens
+    // If n's parent is black, there is no fixing required, so therefore no rotation happens
     n.parent.color = Red
 
-    -- Uncle is either missing or is Black (otherwise only recoloring is needed)
+    // Uncle is either missing or is Black (otherwise only recoloring is needed)
     n.uncle.color in Black
 }
 
 pred insertRotate[n : Node] {
     insertRotateEnabled[n]
 
-    -- Since parent is red, and n is red, the coloring is violated
-    -- Grandparent must always be black, since parent is red
-    -- Uncle may be missing
+    // Since parent is red, and n is red, the coloring is violated
+    // Grandparent must always be black, since parent is red
+    // Uncle may be missing
 
     // Preserve deletion state
     type' = type
     nullNode' = nullNode
     
     let p = n.parent, g = n.grandparent, u = n.uncle | {
-        -- Let everything except n, p, g, and g.parent stay the same
+        // Let everything except n, p, g, and g.parent stay the same
         // The exceptions will be constrained in the cases
-        -- Uncle does not change in any case
+        // Uncle does not change in any case
         all o: Node - (n + p + g + g.parent) | {
             o.left' = o.left
             o.right' = o.right
             o.color' = o.color
         }
 
-        -- Left Left case
+        // Left Left case
         //        g          pB
         //       / \        / \
         //      p   u  =>  n   gR
         //     / \             / \
         //    n  p_r         p_r  u
         (g.left.left = n) => {
-            -- Replace grandparent with parent
+            // Replace grandparent with parent
             replaceGrandparent[g, p]
 
             p.left' = n
@@ -200,7 +200,7 @@ pred insertRotate[n : Node] {
             n.color' = n.color
         }
 
-        -- Left Right case
+        // Left Right case
         //        g             nB
         //       / \          /    \
         //      p   u  =>   pR      gR
@@ -209,7 +209,7 @@ pred insertRotate[n : Node] {
         //       / \
         //     n_l n_r
         (g.left.right = n) => {
-            -- Replace the grandparent with n
+            // Replace the grandparent with n
             replaceGrandparent[g, n]
 
             n.left' = p
@@ -225,14 +225,14 @@ pred insertRotate[n : Node] {
             g.color' = Red
         }
 
-        -- Right Right case
+        // Right Right case
         //        g          pB
         //       / \        / \
         //      u   p  =>  gR  nR
         //         / \    / \
         //       p_l  n  u  p_l
         (g.right.right = n) => {
-            -- Replace grandparent with parent
+            // Replace grandparent with parent
             replaceGrandparent[g, p]
 
             p.left' = g
@@ -248,7 +248,7 @@ pred insertRotate[n : Node] {
             n.color' = n.color
         }
 
-        -- Right Left case
+        // Right Left case
         //        g                nB
         //       / \             /    \
         //      u    p    =>   gR       p
