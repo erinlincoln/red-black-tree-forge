@@ -13,7 +13,9 @@ Finally, we have also implemented a basic search-complexity model. This model im
 ### Sigs
 
 * Red-black Trees (`src/tree.frg`):
-  * `Tree`: A single sig `Tree` contains the root `Node` of the tree. This may be `none` in the case of an empty tree, and may change as nodes are added, removed, or rotated.
+  * `Tree`: A single sig that contains the state of the tree.
+    * `root`: an optional `Node` that indicates the root `Node` of the tree. This may be `none` in the case of an empty tree, and may change as nodes are added, removed, or rotated.
+    * `step`: a counter that counts the number of algorithm steps (insert, rotates, recolors, etc.) that have been completed in a trace. This is used to prove worst-case complexity.
   * `Node`: Represents a node in the tree.
     * `value`: an `Int` value, which allows us to compare nodes for proper placement in the binary search tree. This does not change.
     * `left`, `right`: an optional node pointing to the left or right node in the tree.
@@ -23,6 +25,10 @@ Finally, we have also implemented a basic search-complexity model. This model im
   * `Color`: an empty abstract sig `Color` which is extended by `Black` and `Red`, used by the `Node.color` property
   * `Type`: (deletion-specific) an empty abstract sig extended by `Single` or `DoubleBlack`, used by the `Node.type` property.
   * `NullNode`: (deletion-specific) an empty abstract sig extended by `IsNull` and `NotNull`, used by the `Node.nullNode` property.
+* Lookup Traces (`src/lookup.frg`)
+  * `Lookup`: A single sig that contains the lookup state
+    * `target`: an integer value that is the target value to find in the tree
+    * `current`: the current node that is being examined in a given trace instance
 
 ### Predicates
 
