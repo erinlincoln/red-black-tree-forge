@@ -86,7 +86,7 @@ This transition happens if there is a double-black node in the tree. It takes th
 
 ### Model Properties
 
-By structuring our model this way we were able to test several properties about the insertion and deletion process for red-black trees. These property tests can be found in the file `red_black_tests_longer_tracelength.frg`.
+By structuring our model this way we were able to test several properties about the insertion and deletion process for red-black trees. These property tests can be found in the file `tests/insert_property_tests.frg`.
 
 The first property that we show is that `wellformedBST` is always maintained during traces. Even though during insertion and deletion the red-black tree properties are not always satisfied until the process is complete, the tree still uses binary search tree insertions, rotations, and deletion. Thus, the tree will always a binary tree.
 
@@ -104,13 +104,13 @@ First, we included a test that a `deleteTransition implies eventually wellformed
 
 Second, we also included a test that `deleteRecolorTransition implies not wellformedRBT`. This shows that recoloring only happens when the tree is not wellformed.
 
-It is important to note that the deletion model adds significant performance overhead to the solver. Thus, to be able to run the `tracesBehavior` test with reasonable runtime, the maximum number of nodes we recommend is 4. However, the insertion predicates (in `insert_tests_longer_tracelength.frg`) are able to run with a relatively reasonable time for 6 Nodes.
+It is important to note that the deletion model adds significant performance overhead to the solver. Thus, to be able to run the `tracesBehavior` test with reasonable runtime, the maximum number of nodes we recommend is 4. However, the insertion predicates (in `tests/insert_property_tests.frg`) are able to run with a relatively reasonable time for 6 Nodes.
 
 ### Runtime properties
 
 We have modeled runtime complexity for both lookup and insertion. In order to count complexity, we added a `step` property that is increment in every non-terminal transition. Then we have tests that specify the maximum number of steps for a given number of nodes.
 
-For example, the `insertComplexity` test in `insert_tests_longer_tracelength.frg` specifies that all 6-node trees can be inserted with only three steps (an insertion followed by two rotations/recolorings).
+For example, the `insertComplexity` test in `tests/insert_property_tests.frg` specifies that all 5-node trees can be inserted with only three steps (an insertion followed by two rotations/recolorings).
 
 Also, the `src/lookup.frg` and corresponding `src/lookup_tests.frg` contain a full model for lookup complexity in a red-black tree. For example, we prove that lookup in a 5-node red-black tree will always complete in under 4 steps.
 
@@ -134,7 +134,7 @@ Essential Properties of Red Black Tree (which ensure balance):
 
 This file includes the basic tests for insertion that can be proved with a tracelength of 2. Essentially, this tests a basic insertion with no recolor or rotation as a result. The tests include testing that we can and cannot insert into the type of trees we expect and essential properties of insert, such as insert increasing the size of the tree and that insert will eventually lead to a wellformed tree via traces.
 
-#### `tests/insert_tests_longer_tracelength.frg`
+#### `tests/insert_property_tests.frg`
 
 We split the tests for insert that require a longer tracelength into this file as to prevent unnecessarily long runtimes while testing basic insert properties. These tests mainly prove the model properties discussed above.
 
