@@ -2,23 +2,27 @@
 
 ## Model Structure
 
-TODO: ADD MODEL STRUCTURE OVERVIEW (Conrad)
+Our model uses a basic binary tree structure -- each node is a `sig` with lone `left` and `right` nodes, and a tree contains a lone root node. Furthermore, our model only examines a single tree at a time. On top of these structures, we use several helper functions for calculating other relationships such as parent, sibling, etc.
+
+Our insert model implements both the basic binary tree insert algorithm and the required rotations for preserving all properties of a red-black tree. We use Electrum to handle the steps of the insertion algorithm. The initial insert is done in one transition, and each rotation or recoloring step is a separate transition. This approach allows us to test and observe the algorithmic complexity of the fix-up algorithm.
+
+Our delete model implements a very similar approach for modeling deletion from a red-black tree: a transition for the initial deletion followed by transition(s) that fix up the red-black properties.
+
+Finally, we have also implemented a basic search-complexity model. This model implements each step of binary tree lookup, starting at the root node and descending one level in the tree at each transition until the target is found or shown to not exist. This allows us to test the algorithmic complexity of lookup in red-black trees.
 
 ### Sigs
 
-Tree:
-
-We have a one sig `Tree` that contains the root of the tree (which is a Node). This is so that we can have an empty tree and also so that the root can change as nodes are added and removed.
-
-Node:
-
-The `Node` sig represents a node in the tree. It contains a value (which must be an int that does nto change), a left and right Node and a Color. The left, right, and color are all vars so that they can change as the tree is rearranged.
-
-The node also contains a field `type` (`DoubleBlack` or `Single`) and a field `nullNode` (`IsNull` or `NotNull`) which is used for the deletion algorithm.
-
-Color:
-
-We have an abstract sig `Color` which is extended by Black and Red in order to represent the fact that nodes can either be black or red.
+* Red-black Trees (`src/tree.frg`):
+  * `Tree`: A single sig `Tree` contains the root `Node` of the tree. This may be `none` in the case of an empty tree, and may change as nodes are added, removed, or rotated.
+  * `Node`: Represents a node in the tree.
+    * `value`: an `Int` value, which allows us to compare nodes for proper placement in the binary search tree. This does not change.
+    * `left`, `right`: an optional node pointing to the left or right node in the tree.
+    * `color`: represents the color of the node in the red-black tree.
+    * `type`: (deletion-specific) a flag to mark a "double-black" node during deletion.
+    * `nullNode`: (deletion-specific) a flag to mark a "nil" node during deletion.
+  * `Color`: an empty abstract sig `Color` which is extended by `Black` and `Red`, used by the `Node.color` property
+  * `Type`: (deletion-specific) an empty abstract sig extended by `Single` or `DoubleBlack`, used by the `Node.type` property.
+  * `NullNode`: (deletion-specific) an empty abstract sig extended by `IsNull` and `NotNull`, used by the `Node.nullNode` property.
 
 ### Predicates
 
