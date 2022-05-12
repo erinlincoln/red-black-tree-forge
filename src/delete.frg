@@ -3,7 +3,8 @@
 open "tree.frg"
 open "insert.frg"
 
-// Algorithms
+// Finds the next value in the subtree such that it is the smallest next value
+// but greater than current value
 fun inorderSuccessor: set Node -> Node {
     {n, succ : Node | no n.right.left => {
         succ = n.right
@@ -12,6 +13,7 @@ fun inorderSuccessor: set Node -> Node {
     }}
 }
 
+// Delete n from the tree
 pred delete[n : Node] {
     // Don't delete until done deleting another node
     no dbNode

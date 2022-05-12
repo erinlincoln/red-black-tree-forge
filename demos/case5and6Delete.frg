@@ -6,6 +6,17 @@ open "../src/delete.frg"
 
 option max_tracelength 10
 
+// Shows a deletion with multiple recolorings and rotations
+
+//          0B
+//        /    \
+//      -4B     4B
+//     /   \   /   \
+//   -6B  -2B 2R   6B
+// del^      /  \
+//          1B  3B
+
+
 run { 
     init
     some n1, n2, n3, n4, n5, n6, n7, n8, n9 : Node | {

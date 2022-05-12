@@ -5,7 +5,9 @@ open "../src/lookup.frg"
 
 option max_tracelength 6
 
-// Proves worst-case lookup algorithm complexity on a RBT
+// Proves worst-case lookup algorithm complexity on a RBT. To do this, we first
+// prove that a tree can be made with thatt complexity and then check that
+// all cases for X number of nodes fall within the expected complexity.
 
 test expect {
     vacuous1: {

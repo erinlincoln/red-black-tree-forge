@@ -24,7 +24,7 @@ pred initLookup {
     Tree.step = 0
 }
 
-// When the
+// When the target value is less than current value, look to the left
 pred leftLookupTransition {
     some Lookup.current
     Lookup.target < Lookup.current.value
@@ -32,6 +32,7 @@ pred leftLookupTransition {
     Lookup.current' = Lookup.current.left
 }
 
+// When the target value is greater than current value, look to the right
 pred rightLookupTransition {
     some Lookup.current
     Lookup.target > Lookup.current.value
@@ -39,6 +40,7 @@ pred rightLookupTransition {
     Lookup.current' = Lookup.current.right
 }
 
+// Complete lookup
 pred lookupCompleteTransition {
     no Lookup.current or Lookup.target = Lookup.current.value
     Tree.step' = Tree.step

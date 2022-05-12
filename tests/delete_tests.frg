@@ -6,8 +6,7 @@ open "../src/insert.frg"
 
 // General tests for deletion in a red black tree. Currently shows examples
 // that cover each case of deletion and general case and property theorem
-// tests. Note: commented out tests indicate that the test is failing. Delete
-// still has bugs, causing the tests to fail.
+// tests. 
 
 // examples for each of the deletion cases
 test expect {

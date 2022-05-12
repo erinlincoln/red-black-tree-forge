@@ -6,6 +6,16 @@ open "../src/delete.frg"
 
 option max_tracelength 10
 
+// Shows a deletion with recoloring and rotation
+
+//          0B
+//        /    \
+//      -4B     4B
+//     /   \   /   \
+//   -6B  -2B 2B   6R
+//     delete ^   /  \
+//              5B    7B
+
 
 run { 
     init

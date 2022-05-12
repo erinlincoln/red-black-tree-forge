@@ -395,6 +395,7 @@ test expect {
         Black in Node.color
     } for exactly 2 Node is sat
 
+    // Test that the uncle function behaves as expected
     uncleTest: {
         wellformedTree => {
             all n: Node | {
@@ -405,6 +406,7 @@ test expect {
         }
     } is theorem
 
+    // Test that the sibling function behaves as expected
     siblingTest: {
         wellformedTree => {
             no root.sibling
@@ -415,6 +417,7 @@ test expect {
         }
     } for 7 Node is theorem
 
+    // Test that the far and near nephew functions behaves as expected
     farNearNephewTest: {
         wellformedTree => {
             no root.farNephew

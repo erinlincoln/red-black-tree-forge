@@ -10,6 +10,18 @@ Our delete model implements a very similar approach for modeling deletion from a
 
 Finally, we have also implemented a basic search-complexity model. This model implements each step of binary tree lookup, starting at the root node and descending one level in the tree at each transition until the target is found or shown to not exist. This allows us to test the algorithmic complexity of lookup in red-black trees.
 
+Our original goals are below and we have met them all.
+* Foundation:
+  * Model the basic structure of a binary search tree
+    * Prove properties of a binary search tree
+* Target:
+  * Model a red-black binary tree
+    * Prove that tree is balanced
+    * Model insertion and prove that balance is maintained
+* Reach:
+  * Model deletion in a red-black binary tree
+  * Prove algorithmic complexity during lookup
+
 ### Sigs
 
 * Red-black Trees (`src/tree.frg`):
@@ -67,8 +79,6 @@ This predicate is the last state after the tree changes. If the termination pred
 ### Deletion Predicates
 
 The code for the deletion model is contained in `src/delete.frg`.
-
-IMPORTANT: The delete algorithm is not complete, and several desired properties are not satisfied. Our main goal for the overall project was modeling insertion, hence the deletion algorithm is not as well-implemented or well-tested.
 
 #### `deleteTraces`
 
