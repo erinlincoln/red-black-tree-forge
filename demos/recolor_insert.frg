@@ -1,8 +1,13 @@
 #lang forge
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/insert.frg"
 
+option max_tracelength 3
+
+// An example of one insert and a recoloring
+//
+// Tree:
 //        0B
 //     /      \
 //   -2B       3B
@@ -13,14 +18,16 @@ open "../src/insert.frg"
 
 run {
     some n1, n2, n3, n4, n5, n6 : Node | {
-      value = n1 -> 0 + n2-> -2 + n3 -> 3 + n4->2 + n5->4 + n6->1
+        value = n1 -> 0 + n2-> -2 + n3 -> 3 + n4->2 + n5->4 + n6->1
 
-      left = n1 -> n2 + n3->n4
-      right = n1 -> n3 + n3-> n5
+        left = n1 -> n2 + n3->n4
+        right = n1 -> n3 + n3-> n5
 
-      color = (n1 + n2 + n3) -> Black + (n4 + n5 + n6) -> Red
+        color = (n1 + n2 + n3) -> Black + (n4 + n5 + n6) -> Red
     }
+
     insertTraces
+
     insertTransition
     next_state insertRecolorTransition
     next_state next_state terminateTransition

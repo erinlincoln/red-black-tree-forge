@@ -1,6 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "tree_electrum.frg"
+open "tree.frg"
 open "insert.frg"
 
 // Algorithms
@@ -15,13 +15,13 @@ fun inorderSuccessor: set Node -> Node {
 pred delete[n : Node] {
     // Don't delete until done deleting another node
     no dbNode
-    -- Don't delete if node is being inserted
+    // Don't delete if node is being inserted
     no nextInsertNode
 
-    -- Node must be in tree
+    // Node must be in tree
     n in treeNode
 
-    -- the node is a leaf
+    // the node is a leaf
     no n.left and no n.right => {
         n.color = Red => {
             n = root => {
@@ -63,7 +63,7 @@ pred delete[n : Node] {
         n.inorderSuccessor.parent.color' = n.inorderSuccessor.parent.color
     }
 
-    -- the node has one child
+    // the node has one child
     no n.left and some n.right => {
         replaceGrandparent[n, n.right]
 
@@ -120,7 +120,6 @@ pred delete[n : Node] {
     // -- the node has two children
     some n.left and some n.right => {
 
-        -- REWRITTEN
         replaceGrandparent[n, n.inorderSuccessor]
 
         no n.left'
@@ -129,7 +128,7 @@ pred delete[n : Node] {
         n.inorderSuccessor.left' = n.left
         n.left.color' = n.left.color
 
-        -- after replacing, n is a red leaf
+        // after replacing, n is a red leaf
         {
             n.inorderSuccessor = n.right
             no n.inorderSuccessor.right
@@ -139,7 +138,7 @@ pred delete[n : Node] {
             n.inorderSuccessor.color' = n.color
         }
 
-        -- after replacing, n is a black leaf
+        // after replacing, n is a black leaf
         {
             n.inorderSuccessor = n.right
             no n.inorderSuccessor.right
@@ -153,7 +152,7 @@ pred delete[n : Node] {
             n.nullNode' = IsNull
         }
 
-        -- after replacing, n has one right child
+        // after replacing, n has one right child
         {
             n.inorderSuccessor = n.right
             some n.inorderSuccessor.right
@@ -168,7 +167,7 @@ pred delete[n : Node] {
             n.inorderSuccessor.color' = n.color
         }
 
-        -- After replacing, n is a Red leaf
+        // After replacing, n is a Red leaf
         {
             n.inorderSuccessor != n.right
             no n.inorderSuccessor.right
@@ -188,7 +187,7 @@ pred delete[n : Node] {
             n.right.color' = n.right.color
         }
 
-        -- After replacing, n is Black leaf
+        // After replacing, n is Black leaf
         {
             n.inorderSuccessor != n.right
             no n.inorderSuccessor.right
@@ -244,7 +243,6 @@ pred delete[n : Node] {
         o.right' = o.right
     }
 
-    // CHANGED -- added subtracting set of color'
     -- Color stays the same except the left, right, inorder successor (and its right)
     color' - (n -> Color + n.left -> Color + n.right -> Color +
               n.inorderSuccessor.right -> Color +
@@ -260,11 +258,6 @@ pred delete[n : Node] {
     nullNode' - (n -> IsNull) = nullNode - (n -> IsNull)
 }
 
-// PREVENTS IMPORT ISSUES WITH IMPORTING INSERT AND DELETE SIMULTANEOUSLY
-pred del_rotate_transition{
-    insertRotateTransition
-}
-
 pred removeDB[db: Node] {
     no db.left'
     no db.right'
@@ -275,12 +268,12 @@ pred recolorDeleteEnabled {
     some dbNode
 }
 
--- Cases are numbered using the table from: https://medium.com/analytics-vidhya/deletion-in-red-black-rb-tree-92301e1474ea
+// Cases are numbered using the table from: https://medium.com/analytics-vidhya/deletion-in-red-black-rb-tree-92301e1474ea
 pred recolorDelete {
-    -- happens when there is still a double black in the tree
+    // happens when there is still a double black in the tree
     recolorDeleteEnabled
 
-    -- Case 2: Node is root
+    // Case 2: Node is root
     let db = dbNode, sib = dbNode.sibling | {
         all o : Node | (o not in (db + db.parent + db.sibling + db.farNephew + db.nearNephew + db.parent.parent)) => {
             o.left' = o.left
@@ -291,7 +284,7 @@ pred recolorDelete {
         }
         db = root => {
             (no db.nullNode) => {
-                -- Remove DoubleBlack sign
+                // Remove DoubleBlack sign
                 no db.type'
                 no db.nullNode'
                 root' = root
@@ -300,7 +293,7 @@ pred recolorDelete {
                 no root'
             }
 
-            -- Things that stay the same:
+            // Things that stay the same:
             db.left' = db.left
             db.right' = db.right
             db.color' = db.color
@@ -336,8 +329,8 @@ pred recolorDelete {
             db.nearNephew.nullNode' = db.nearNephew.nullNode
         } else {
 
-            -- Case 3: sibling is black and the children are black
-            -- also the case where there is no sibling
+            // Case 3: sibling is black and the children are black
+            // also the case where there is no sibling
             {
                 (sib.color = Black and 
                 (sib.left.color = Black or no sib.left) and
@@ -348,7 +341,7 @@ pred recolorDelete {
 
                 root' = root
 
-                -- if null, remove from tree, else remove db sign
+                // if null, remove from tree, else remove db sign
                 db.nullNode = IsNull => {
                     removeDB[db]
                     db.parent.left = db => {
@@ -369,11 +362,11 @@ pred recolorDelete {
                     db.parent.right' = db.parent.right
                 }
 
-                -- change sibs color to red
+                // change sibs color to red
                 sib.color' = Red
 
-                -- if DBs parent is black, set it to double black,
-                -- otherwise make parent black
+                // if DBs parent is black, set it to double black,
+                // otherwise make parent black
                 db.parent.color = Black => {
                     db.parent.type' = DoubleBlack
                     no db.parent.nullNode'
@@ -386,7 +379,7 @@ pred recolorDelete {
                     db.parent.nullNode' = db.parent.nullNode
                 }
 
-                -- Things that stay the same:
+                // Things that stay the same:
                 sib.left' = sib.left
                 sib.right' = sib.right
                 sib.type' = sib.type
@@ -411,16 +404,16 @@ pred recolorDelete {
                 db.nearNephew.nullNode' = db.nearNephew.nullNode
             }
 
-            -- Case 4: the sibling is red
+            // Case 4: the sibling is red
             {
                 some sib
                 sib.color = Red
             } => {
-                -- Swap color of DBs parent with DBs sib
+                // Swap color of DBs parent with DBs sib
                 db.parent.color' = sib.color
                 sib.color' = db.parent.color
 
-                -- Rotate at parent node in direction of DB node
+                // Rotate at parent node in direction of DB node
                 db.parent.left = db => {
                     replaceGrandparent[db.parent, sib]
 
@@ -439,7 +432,7 @@ pred recolorDelete {
                     db.parent.right' = db.parent.right
                 }
 
-                -- stays the same:
+                // stays the same:
                 db.left' = db.left
                 db.right' = db.right
                 db.color' = db.color
@@ -468,18 +461,18 @@ pred recolorDelete {
                 sib.nullNode' = sib.nullNode
             }
 
-            -- Case 5: sibling is black, near sibling child is red
+            // Case 5: sibling is black, near sibling child is red
             {
                 some sib
                 sib.color = Black
                 (db.farNephew.color = Black or no db.farNephew)
                 db.nearNephew.color = Red
             } => {
-                -- Swap color of sibling with siblings red child
+                // Swap color of sibling with siblings red child
                 sib.color' = db.nearNephew.color
                 db.nearNephew.color' = sib.color
 
-                -- Rotate at sibling node away from DB node
+                // Rotate at sibling node away from DB node
                 db.parent.left = db => {
                     replaceGrandparent[sib, db.nearNephew]
 
@@ -489,7 +482,7 @@ pred recolorDelete {
                     sib.left' = db.nearNephew.right
                     sib.right' = sib.right
 
-                    -- stays the same:
+                    // stays the same:
                     db.farNephew.left' = db.farNephew.left
                     db.farNephew.right' = db.farNephew.right
                 } else {
@@ -506,7 +499,7 @@ pred recolorDelete {
                     db.farNephew.right' = db.farNephew.right
                 }
 
-                -- stays the same:
+                // stays the same:
                 db.left' = db.left
                 db.right' = db.right
                 db.color' = db.color
@@ -533,17 +526,17 @@ pred recolorDelete {
                 sib.nullNode' = sib.nullNode
             }
 
-            -- Case 6: sibling is black, far child is red
+            // Case 6: sibling is black, far child is red
             {
                 some sib
                 sib.color = Black
                 db.farNephew.color = Red
             } => {
-                -- Swap color of siblings red child with color of sibling
+                // Swap color of siblings red child with color of sibling
                 db.parent.color' = sib.color
                 sib.color' = db.parent.color
 
-                -- Rotate parent node in the direction of DB
+                // Rotate parent node in the direction of DB
                 db.parent.left = db => {
                     replaceGrandparent[db.parent, sib]
 
@@ -570,8 +563,8 @@ pred recolorDelete {
                     }
                 }
 
-                -- If DB is null, remove from tree, otherwise
-                -- remove DB sign and make black
+                // If DB is null, remove from tree, otherwise
+                // remove DB sign and make black
                 db.nullNode = IsNull => {
                     removeDB[db]
                 } else {
@@ -580,10 +573,10 @@ pred recolorDelete {
                     db.color' = Black
                 }
 
-                -- Make far sibling child to black
+                // Make far sibling child to black
                 db.farNephew.color' = Black
 
-                -- stays the same:
+                // stays the same:
                 db.left' = db.left
                 db.right' = db.right
 
@@ -611,28 +604,23 @@ pred recolorDelete {
     }
 }
 
-pred delete_transition {
+pred deleteTransition {
     some n: Node | delete[n]
 }
 
-pred delete_recolor_transition {
+pred deleteRecolorTransition {
     no nextInsertNode
     recolorDelete
 }
 
-pred traces_del {
+pred deleteTraces {
     init
 
     always {
         (
-            delete_transition or
-            delete_recolor_transition or
+            deleteTransition or
+            deleteRecolorTransition or
             terminateTransition
         )
     }
 }
-
-run { 
-    traces_del
-    not (always wellformed_binary)
-} for 4 Node

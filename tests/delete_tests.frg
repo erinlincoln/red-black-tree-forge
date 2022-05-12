@@ -1,6 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/delete.frg"
 open "../src/insert.frg"
 
@@ -54,10 +54,10 @@ open "../src/insert.frg"
 
 //         }
 
-//         traces_del
-//         delete_transition
-//         next_state delete_recolor_transition
-//         next_state delete_recolor_transition
+//         traces
+//         deleteTransition
+//         next_state deleteRecolorTransition
+//         next_state deleteRecolorTransition
     
 // } for exactly 8 Node
 
@@ -100,9 +100,9 @@ test expect {
     //         no nullNode
     //     }
 
-    //     wellformed_rb
-    //     traces_del
-    //     delete_transition
+    //     wellformedRBT
+    //     deleteTraces
+    //     deleteTransition
 
     // } for exactly 8 Node is sat
 
@@ -137,13 +137,9 @@ test expect {
 
     //         color' = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-    //         no type
-    //         no nullNode
-    //     }
-
-    //     wellformed_rb
-    //     traces_del
-    //     delete_transition
+    //     wellformedRBT
+    //     deleteTraces
+    //     deleteTransition
 
     // } for exactly 8 Node is sat
 
@@ -181,8 +177,8 @@ test expect {
     //     }
 
     //     init
-    //     delete_transition
-    //     next_state delete_recolor_transition
+    //     deleteTransition
+    //     next_state deleteRecolorTransition
     //     next_state next_state terminateTransition
 
     // } for exactly 5 Node is sat
@@ -254,7 +250,7 @@ test expect {
         //       -5B -2B 2B   4R
         //        delete ^   /  \
         //                  1B  5B
-        some n1, n2, n3, n4, n5, n6, n7, n8, n9, db : Node | {
+        some n1, n2, n3, n4, n5, n6, n7, n8, n9 : Node | {
             value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
                 + n6 -> 2 + n7 -> 4 + n8 -> 1 + n9 -> 5
             left = n1 -> n2 + n2 -> n4 + n3 -> n6 + n7 -> n8
@@ -287,6 +283,10 @@ test expect {
             no nullNode'''
         }
 
+        deleteTraces
+        deleteTransition
+        next_state deleteRecolorTransition
+        next_state deleteRecolorTransition
     } for exactly 9 Node is sat
 
     // case 4:
@@ -302,8 +302,8 @@ test expect {
 
             delete[n6]
         }
-        traces_del
-        eventually wellformed_rb
+        deleteTraces
+        eventually wellformedRBT
     } for exactly 9 Node is sat
 
     // case 5/case6: 
@@ -320,7 +320,7 @@ test expect {
             delete[n4]
         }
         traces_del
-        eventually wellformed_rb
+        eventually wellformedRBT
     } for exactly 9 Node is sat
 }
 
@@ -328,30 +328,30 @@ test expect {
 test expect {
     // vacuous: can delete
     vacuous: {
-        traces_del
-        delete_transition
+        deleteTraces
+        deleteTransition
     } is sat
 
     // CASES
     // cannot delete in empty tree
     cannotDeleteEmpty : {
-        traces_del
+        deleteTraces
         no root
         some n : Node | delete[n]
     } for exactly 2 Node is unsat
 
     // can delete root node in empty tree
     deleteRootEmpty : {
-        traces_del
+        deleteTraces
         some root
         no root.left
         no root.right
-        delete_transition
+        deleteTransition
     } for exactly 2 Node is sat
 
     // can delete root node in not empty tree
     deleteRootLR : {
-        traces_del
+        deleteTraces
         some root.left
         some root.right
         delete[root]
@@ -359,51 +359,51 @@ test expect {
 
     // can delete in 3 node tree
     delete3Nodes : {
-        traces_del
+        deleteTraces
         some root.left
         some root.right
-        delete_transition
+        deleteTransition
     } for exactly 4 Node is sat
 
     // // can delete in height 3 tree
     deleteHeight3: {
-        traces_del
+        deleteTraces
         #{treeNode} = 7
-        delete_transition
+        deleteTransition
     } for exactly 8 Node is sat
 
     // can delete such that there is no recolor or rotation
     deleteNoRecolorNoRotation: {
-        traces_del
-        delete_transition
-        not (eventually delete_recolor_transition)
-        not (eventually del_rotate_transition)
+        deleteTraces
+        deleteTransition
+        not (eventually deleteRecolorTransition)
+        not (eventually insertRotateTransition)
     } for exactly 3 Node is sat
 
     // can delete node with children
     deleteWithChildren: {
-        traces_del
+        deleteTraces
         some n : Node | {delete[n] and some n.children}
     } for exactly 5 Node is sat
 
     // PROPERTIES
     // deletion eventually means wellformed
     deleteToWellformed: {
-        traces_del => {
-            delete_transition => eventually wellformed_rb
+        deleteTraces => {
+            deleteTransition => eventually wellformedRBT
         }
     } is theorem
 
     // double black node implies not wellformed
     dbNotWellformed: {
-        traces_del => {
-            some dbNode => not wellformed_rb
+        deleteTraces => {
+            some dbNode => not wellformedRBT
         }
     } is theorem
 
     // if a node is db, it will eventually not be in tree
     dbToOutOfTree: {
-        traces_del => {
+        deleteTraces => {
             some dbNode => eventually no dbNode
         }
     } is theorem
@@ -412,7 +412,7 @@ test expect {
     
     // can't delete a node not in tree
     cannotDeleteOutOfTree: {
-        traces_del => { all n: {Node - treeNode} | {
+        deleteTraces => { all n: {Node - treeNode} | {
             not delete[n]
         } }
     } is theorem

@@ -1,6 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/insert.frg"
 
 // Insert property tests with longer tracelengths for RBTs.
@@ -19,8 +19,6 @@ pred simpleInsertTrace {
     )
 }
 
-
-
 test expect {
     vacuous: {
         insertTraces
@@ -28,19 +26,22 @@ test expect {
     } for exactly 1 Node is sat
 
     // PROPERTY TESTS
+
+    // Validates several properties of insert traces
+    // These are combined into a single test to improve performance
     tracesBehavior: {
         insertTraces => always {
-            -- binary tree always maintained at each intermediate step
-            wellformed_binary
+            // BST always maintained at each intermediate step
+            wellformedBST
 
-            // -- at the end, we have a wellformed red-black tree
-            terminateTransition => wellformed_rb
+            // At the end, we have a wellformed red-black tree
+            terminateTransition => wellformedRBT
 
-            -- if we do an insert, we will eventually have a wellformed red-black tree
-            insertTransition => eventually wellformed_rb
+            // If we do an insert, we will eventually have a wellformed red-black tree
+            insertTransition => eventually wellformedRBT
 
-            -- only rotate or recolor when the current state is not well-formed
-            (insertRotateTransition or insertRecolorTransition) => not wellformed_rb
+            // Only rotate or recolor when the current state is not well-formed
+            (insertRotateTransition or insertRecolorTransition) => not wellformedRBT
         }
     } for 4 Node is theorem
 
@@ -55,11 +56,13 @@ test expect {
         next_state terminateTransition
     } for exactly 4 Node is sat
 
+    // We have a tree that requires 3 steps for an insertion
     complexInsert: {
         simpleInsertTrace
         eventually (Tree.step = 3)
     } for exactly 5 Node is sat
 
+    // All trees
     insertComplexity: {
         simpleInsertTrace => {
             always (Tree.step <= 3)

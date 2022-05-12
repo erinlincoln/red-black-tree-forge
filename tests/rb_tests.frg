@@ -1,6 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 
 // Show basic examples and properties of a static RBT.
 
@@ -12,14 +12,11 @@ inst baseInst {
     Black = `black
     Red = `red
     Color = Black + Red
-
-    Single = `single
     DoubleBlack = `DoubleBlack
-    Type = Single + DoubleBlack
-
     IsNull = `isnull
-    NotNull = `notnull
-    NullNode = IsNull + NotNull
+
+    no type
+    no nullNode
 }
 
 inst singleRootInst {
@@ -49,7 +46,7 @@ inst fourNodeInst {
 
 // example sat red-black trees
 
-example emptyTree is wellformed_rb for {
+example emptyTree is wellformedRBT for {
     baseInst
     no Node
     no left
@@ -57,7 +54,7 @@ example emptyTree is wellformed_rb for {
 }
 
 // 1B
-example oneNodeTree is wellformed_rb for {
+example oneNodeTree is wellformedRBT for {
     singleRootInst
     no left
     no right
@@ -67,7 +64,7 @@ example oneNodeTree is wellformed_rb for {
 //   2B
 //  /
 // 1R
-example twoNodeTreeLeft is wellformed_rb for {
+example twoNodeTreeLeft is wellformedRBT for {
     twoNodeInst
     rootNode = Tree -> `n2
     left = `n2 -> `n1
@@ -78,7 +75,7 @@ example twoNodeTreeLeft is wellformed_rb for {
 // 1B
 //   \
 //    2R
-example twoNodeTreeRight is wellformed_rb for {
+example twoNodeTreeRight is wellformedRBT for {
     twoNodeInst
     rootNode = Tree -> `n1
     no left
@@ -89,7 +86,7 @@ example twoNodeTreeRight is wellformed_rb for {
 //   2B
 //  /  \
 // 1R  3R
-example threeNodeBalanced is wellformed_rb for {
+example threeNodeBalanced is wellformedRBT for {
     threeNodeInst
     rootNode = Tree -> `n2
     left = `n2 -> `n1
@@ -102,7 +99,7 @@ example threeNodeBalanced is wellformed_rb for {
 //    2R
 //
 // Not in tree: 3B 4R
-example allowNodesNotInTree is wellformed_rb for {
+example allowNodesNotInTree is wellformedRBT for {
     fourNodeInst
     rootNode = Tree -> `n1
     no left
@@ -112,7 +109,7 @@ example allowNodesNotInTree is wellformed_rb for {
 
 // Example unsat red-black trees
 
-example rootIsRed is (wellformed_binary and not wellformed_rb) for {
+example rootIsRed is (wellformedBST and not wellformedRBT) for {
     singleRootInst
     no left
     no right
@@ -123,7 +120,7 @@ example rootIsRed is (wellformed_binary and not wellformed_rb) for {
 //    1
 //   /
 //  2
-example twoNodeUnsorted is (wellformed_tree and not wellformed_binary) for {
+example twoNodeUnsorted is (wellformedTree and not wellformedBST) for {
     twoNodeInst
     rootNode = Tree -> `n1
     left = `n1 -> `n2
@@ -136,7 +133,7 @@ example twoNodeUnsorted is (wellformed_tree and not wellformed_binary) for {
 //  1
 //   \
 //    3
-example threeNodeNestedUnsorted is (wellformed_tree and not wellformed_binary) for {
+example threeNodeNestedUnsorted is (wellformedTree and not wellformedBST) for {
     threeNodeInst
     rootNode = Tree -> `n2
     left = `n2 -> `n1
@@ -147,7 +144,7 @@ example threeNodeNestedUnsorted is (wellformed_tree and not wellformed_binary) f
 //  /  \
 // n2   |
 //   \_/
-example twoNodeLoops is not wellformed_tree for {
+example twoNodeLoops is not wellformedTree for {
     twoNodeInst
     rootNode = Tree -> `n1
     left = `n1 -> `n2
@@ -158,7 +155,7 @@ example twoNodeLoops is not wellformed_tree for {
 //  /  \
 //  \  /
 //   n2
-example twoNodeLeftAndRightEdge is not wellformed_tree for {
+example twoNodeLeftAndRightEdge is not wellformedTree for {
     twoNodeInst
     rootNode = Tree -> `n1
     left = `n1 -> `n2
@@ -170,7 +167,7 @@ example twoNodeLeftAndRightEdge is not wellformed_tree for {
  //    n1   \
  //   /      \
  //  ∠--------n3
-example twoParents is not wellformed_tree for {
+example twoParents is not wellformedTree for {
     threeNodeInst
     rootNode = Tree -> `n2
     left = `n2 -> `n1 + `n1 -> `n3
@@ -182,7 +179,7 @@ example twoParents is not wellformed_tree for {
 //    2R
 //   /
 //  1B
-example threeNodeInvalidBlackDepth is (wellformed_binary and not wellformed_rb) for {
+example threeNodeInvalidBlackDepth is (wellformedBST and not wellformedRBT) for {
     threeNodeInst
     rootNode = Tree -> `n3
     left = `n3 -> `n2 + `n2 -> `n1
@@ -195,7 +192,7 @@ example threeNodeInvalidBlackDepth is (wellformed_binary and not wellformed_rb) 
 //    2R
 //     \
 //      3R
-example redAdjacent is (wellformed_binary and not wellformed_rb) for {
+example redAdjacent is (wellformedBST and not wellformedRBT) for {
     threeNodeInst
     rootNode = Tree -> `n1
     no left
@@ -208,7 +205,7 @@ example redAdjacent is (wellformed_binary and not wellformed_rb) for {
 //   2B
 //  /
 // 1B
-example threeNodeAllBlack is (wellformed_binary and not wellformed_rb) for {
+example threeNodeAllBlack is (wellformedBST and not wellformedRBT) for {
     threeNodeInst
     rootNode = Tree -> `n3
     left = `n3 -> `n2 + `n2 -> `n1
@@ -220,7 +217,7 @@ example threeNodeAllBlack is (wellformed_binary and not wellformed_rb) for {
 //  n1         n2
 //            /
 //           n3
-example parentNodesOutsideOfTree is not wellformed_tree for {
+example parentNodesOutsideOfTree is not wellformedTree for {
     threeNodeInst
     rootNode = Tree -> `n1
     left = `n2 -> `n3
@@ -244,7 +241,7 @@ inst SixNodeExample {
 }
 
 example blackDepthTest is {
-    wellformed_binary
+    wellformedBST
     blackDepth[root] = 1
     some n1: Node | n1.value = 1 and blackDepth[n1] = 2
     some n2: Node | n2.value = 2 and blackDepth[n2] = 1
@@ -254,7 +251,7 @@ example blackDepthTest is {
 } for SixNodeExample
 
 example siblingExample is {
-    wellformed_binary
+    wellformedBST
     some n1, n3: Node | {
         n1.value = 1
         n3.value = 3
@@ -291,7 +288,7 @@ inst SevenNodeExample {
 }
 
 example farNearNephewExample is {
-    wellformed_binary
+    wellformedBST
 
     some n1, n2, n3, n5, n6, n7: Node | {
         (n1 -> 1 + n2 -> 2 + n3 -> 3 + n5 -> 5 + n6 -> 6 + n7 -> 7) in value
@@ -340,28 +337,28 @@ pred sameBlackDepth {
 }
 
 test expect {
-    vacuous: {wellformed_rb} is sat
+    vacuous: {wellformedRBT} is sat
 
     // 1. All nodes are either red or black
-    eitherRedBlack: { wellformed_rb => allRedBlack } is theorem
+    eitherRedBlack: { wellformedRBT => allRedBlack } is theorem
 
     // 2. All NIL nodes are black
     //    This is implicit with how we are treating nodes; NIL nodes are not explicitly added to the graph
     //    therefore we cannot specify their color explicitly
 
     // 3. If a node is red, children are black
-    redImpliesBlackLeftRightTest: { wellformed_rb => redImpliesBlackLeftRight } is theorem
+    redImpliesBlackLeftRightTest: { wellformedRBT => redImpliesBlackLeftRight } is theorem
 
     // 4. every path from node to descendant is same number of black nodes
-    sameNumBlackTest: { wellformed_rb => sameBlackDepth } is theorem
+    sameNumBlackTest: { wellformedRBT => sameBlackDepth } is theorem
 
     // all left nodes are less than right nodes
-    leftLessThanRightTest: { wellformed_binary => {
+    leftLessThanRightTest: { wellformedBST => {
         all n: Node | {some n.left and some n.right} => {n.left.value <= n.right.value}
     } } is theorem
 
     // Every node in a left sub-tree has value <= parent, and opposite for right
-    sortedTree: { wellformed_binary => {
+    sortedTree: { wellformedBST => {
         all p: Node | {
             all l: (p.left + p.left.children) | l.value <= p.value
             all r: (p.right + p.right.children) | r.value >= p.value
@@ -369,34 +366,34 @@ test expect {
     } } is theorem
     
     // Trees don't contain cycles
-    treeTest: { wellformed_tree => (all n: Node | n not in n.children) } is theorem
+    treeTest: { wellformedTree => (all n: Node | n not in n.children) } is theorem
 
     // sat for an empty tree (no root)
-    emptyTree: {wellformed_rb} for exactly 0 Node is sat 
+    emptyTree: {wellformedRBT} for exactly 0 Node is sat 
     // sat for one node in tree
-    oneNode: {wellformed_rb} for exactly 1 Node is sat
+    oneNode: {wellformedRBT} for exactly 1 Node is sat
     // sat for two nodes in tree
-    twoNodes: { wellformed_rb } for exactly 2 Node is sat
+    twoNodes: { wellformedRBT } for exactly 2 Node is sat
     // sat for three nodes in tree
-    threeNodes: { wellformed_rb } for exactly 3 Node is sat
+    threeNodes: { wellformedRBT } for exactly 3 Node is sat
     // sat for four nodes in tree
-    fourNodes: { wellformed_rb } for exactly 4 Node is sat
+    fourNodes: { wellformedRBT } for exactly 4 Node is sat
     // sat for 5 nodes in tree
-    fiveNodes: { wellformed_rb } for exactly 5 Node is sat
+    fiveNodes: { wellformedRBT } for exactly 5 Node is sat
     // sat for 7 nodes in tree
-    sevenNodes: { wellformed_rb } for exactly 7 Node, 5 Int is sat
+    sevenNodes: { wellformedRBT } for exactly 7 Node, 5 Int is sat
     // sat for 10 nodes in tree
-    tenNodes: { wellformed_rb } for exactly 10 Node, 5 Int is sat
+    tenNodes: { wellformedRBT } for exactly 10 Node, 5 Int is sat
     
     // sat for two nodes of different colors
     redAndBlackNodes: {
-      wellformed_rb
-      Red in Node.color
-      Black in Node.color
+        wellformedRBT
+        Red in Node.color
+        Black in Node.color
     } for exactly 2 Node is sat
 
     uncleTest: {
-        wellformed_tree => {
+        wellformedTree => {
             all n: Node | {
                 n.uncle in n.parent.parent.immediateChildren
                 lone n.uncle
@@ -406,7 +403,7 @@ test expect {
     } is theorem
 
     siblingTest: {
-        wellformed_tree => {
+        wellformedTree => {
             no root.sibling
             all n: Node | lone n.sibling
             all n1, n2: Node | {
@@ -416,7 +413,7 @@ test expect {
     } for 7 Node is theorem
 
     farNearNephewTest: {
-        wellformed_tree => {
+        wellformedTree => {
             no root.farNephew
             no root.nearNephew
 
