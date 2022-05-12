@@ -2,7 +2,7 @@
 
 ## Model Structure
 
-[Here is a video demo of our project.] (https://youtu.be/Y1hYfNt9LLM)
+[Here is a video demo of our project.](https://youtu.be/Y1hYfNt9LLM)
 
 Our model uses a basic binary tree structure -- each node has an optional left and an optional right node, and a tree contains an optional root node. Our model only examines a single tree at a time. On top of these structures, we use several helper functions for calculating other relationships such as parent, sibling, etc.
 
