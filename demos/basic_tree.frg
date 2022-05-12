@@ -3,6 +3,10 @@
 open "../src/tree.frg"
 open "../src/insert.frg"
 
+option max_tracelength 1
+
+// Show a RBT with 12 Nodes and height 5
+
 //               0B
 //            /      \
 //         -2B       2B
@@ -27,5 +31,7 @@ run {
       color = (z + m6 + m3 + m2 + m1 + p1 + p2 + p3) -> Black +
               (m8 + m7 + m5 + m4) -> Red
     }
+
     insertTraces
+    terminateTransition
 } for exactly 12 Node

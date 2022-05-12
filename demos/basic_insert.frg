@@ -3,6 +3,12 @@
 open "../src/tree.frg"
 open "../src/insert.frg"
 
+option max_tracelength 2
+
+// An example that shows an insert that does not need recoloring/rotating
+// to preserve the RBT properties
+//
+// Tree:
 //        0B
 //     /      \
 //   -2R       2R
@@ -21,6 +27,7 @@ run {
 
       color = (n1 + n4 + n5 + n6 + n7) -> Black + (n2 + n3 + n8) -> Red
     }
+
     insertTraces
     insertTransition
     next_state terminateTransition

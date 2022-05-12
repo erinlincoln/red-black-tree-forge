@@ -19,8 +19,6 @@ pred simpleInsertTrace {
     )
 }
 
-
-
 test expect {
     vacuous: {
         insertTraces
@@ -28,26 +26,22 @@ test expect {
     } for exactly 1 Node is sat
 
     // PROPERTY TESTS
+
+    // Validates several properties of insert traces
+    // These are combined into a single test to improve performance
     tracesBehavior: {
         insertTraces => always {
-            -- binary tree always maintained at each intermediate step
+            -- BST always maintained at each intermediate step
             wellformedBST
 
-            -- at the end, we have a wellformed red-black tree
+            -- At the end, we have a wellformed red-black tree
             terminateTransition => wellformedRBT
 
-            -- if we do an insert, we will eventually have a wellformed red-black tree
+            -- If we do an insert, we will eventually have a wellformed red-black tree
             insertTransition => eventually wellformedRBT
 
-            -- only rotate or recolor when the current state is not well-formed
+            -- Only rotate or recolor when the current state is not well-formed
             (insertRotateTransition or insertRecolorTransition) => not wellformedRBT
-
-            -- TODO: NEED TO MOVE TO DELETE TESTS
-            // // eventually wellformedRBT after delete
-            // delete_transition => eventually wellformedRBT
-
-            // // only delete_recolor when current state is not wellformed
-            // delete_recolor_transition => not wellformedRBT
         }
     } for 6 Node is theorem
 

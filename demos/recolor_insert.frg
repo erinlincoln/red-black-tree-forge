@@ -3,6 +3,11 @@
 open "../src/tree.frg"
 open "../src/insert.frg"
 
+option max_tracelength 3
+
+// An example of one insert and a recoloring
+//
+// Tree:
 //        0B
 //     /      \
 //   -2B       3B
@@ -20,7 +25,9 @@ run {
 
       color = (n1 + n2 + n3) -> Black + (n4 + n5 + n6) -> Red
     }
+
     insertTraces
+
     insertTransition
     next_state insertRecolorTransition
     next_state next_state terminateTransition
