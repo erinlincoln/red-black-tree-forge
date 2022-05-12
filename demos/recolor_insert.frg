@@ -18,12 +18,12 @@ option max_tracelength 3
 
 run {
     some n1, n2, n3, n4, n5, n6 : Node | {
-      value = n1 -> 0 + n2-> -2 + n3 -> 3 + n4->2 + n5->4 + n6->1
+        value = n1 -> 0 + n2-> -2 + n3 -> 3 + n4->2 + n5->4 + n6->1
 
-      left = n1 -> n2 + n3->n4
-      right = n1 -> n3 + n3-> n5
+        left = n1 -> n2 + n3->n4
+        right = n1 -> n3 + n3-> n5
 
-      color = (n1 + n2 + n3) -> Black + (n4 + n5 + n6) -> Red
+        color = (n1 + n2 + n3) -> Black + (n4 + n5 + n6) -> Red
     }
 
     insertTraces

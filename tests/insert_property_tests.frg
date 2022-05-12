@@ -43,7 +43,7 @@ test expect {
             // Only rotate or recolor when the current state is not well-formed
             (insertRotateTransition or insertRecolorTransition) => not wellformedRBT
         }
-    } for 5 Node is theorem
+    } for 6 Node is theorem
 
     canInsertWithoutRecolorOrRotate: {
         insertTraces
@@ -67,5 +67,5 @@ test expect {
         simpleInsertTrace => {
             always (Tree.step <= 3)
         }
-    } for 6 Node is theorem
+    } for 5 Node is theorem
 }

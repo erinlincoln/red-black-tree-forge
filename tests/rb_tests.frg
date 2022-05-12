@@ -387,9 +387,9 @@ test expect {
     
     // sat for two nodes of different colors
     redAndBlackNodes: {
-      wellformedRBT
-      Red in Node.color
-      Black in Node.color
+        wellformedRBT
+        Red in Node.color
+        Black in Node.color
     } for exactly 2 Node is sat
 
     uncleTest: {
