@@ -10,7 +10,7 @@ one sig Lookup {
   target: one Int
 }
 
-pred init_lookup {
+pred initLookup {
   // Not an empty tree
   some Node
 
@@ -25,27 +25,27 @@ pred init_lookup {
 }
 
 // When the
-pred left_lookup_transition {
+pred leftLookupTransition {
   some Lookup.current
   Lookup.target < Lookup.current.value
   Tree.step' = add[Tree.step, 1]
   Lookup.current' = Lookup.current.left
 }
 
-pred right_lookup_transition {
+pred rightLookupTransition {
   some Lookup.current
   Lookup.target > Lookup.current.value
   Tree.step' = add[Tree.step, 1]
   Lookup.current' = Lookup.current.right
 }
 
-pred lookup_complete_transition {
+pred lookupCompleteTransition {
   no Lookup.current or Lookup.target = Lookup.current.value
   Tree.step' = Tree.step
   Lookup.current' = Lookup.current
 }
 
-pred lookup_transition {
+pred lookupTransition {
   // Tree structure stays the same
   rootNode' = rootNode
   left' = left
@@ -54,18 +54,19 @@ pred lookup_transition {
   type' = type
   nullNode' = nullNode
 
-  left_lookup_transition or
-  right_lookup_transition or
-  lookup_complete_transition
+  leftLookupTransition or
+  rightLookupTransition or
+  lookupCompleteTransition
 }
 
-pred lookup_traces {
-  init_lookup
-  always lookup_transition
+pred lookupTraces {
+  initLookup
+  always lookupTransition
 }
 
-// Counts the number of steps, not including the termination step
+// Counts the total number of steps completed
 fun complexity: Int {
-  lookup_complete_transition => 0
+  // If the initial state is a termination, return 0
+  lookupCompleteTransition => 0
   else max[{ i: Int | eventually Tree.step = i }]
 }
