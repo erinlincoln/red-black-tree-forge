@@ -41,5 +41,5 @@ run {
     insertTransition
     next_state insertRecolorTransition
     next_state next_state insertRotateTransition
-    next_state next_state terminateTransition
+    next_state next_state next_state terminateTransition
 } for exactly 12 Node
