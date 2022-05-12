@@ -2,7 +2,7 @@
 
 // Tests for rotating after insertion
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/insert.frg"
 
 option problem_type temporal

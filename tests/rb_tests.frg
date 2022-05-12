@@ -1,6 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 
 // Show basic examples and properties of a static RBT.
 

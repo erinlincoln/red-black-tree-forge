@@ -1,6 +1,6 @@
 #lang forge
 
-open "tree_electrum.frg"
+open "tree.frg"
 
 // Models a regular binary tree lookup algorithm
 // Included to prove lookup complexity in modeled RBT matches expected complexity.

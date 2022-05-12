@@ -2,7 +2,7 @@
 
 // Tests for the basic BST insertion. Includes both properties and cases for insertion.
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/insert.frg"
 
 // Use a trace length of 2, which is enough to prove properties by induction

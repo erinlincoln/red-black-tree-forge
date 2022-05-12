@@ -1,6 +1,6 @@
 #lang forge
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/insert.frg"
 
 //               0B

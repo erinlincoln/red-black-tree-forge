@@ -3,7 +3,7 @@
 // Tests for recoloring after insertion. Includes both examples and properties
 // of trees that will or have undergone recoloring.
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/insert.frg"
 
 option problem_type temporal

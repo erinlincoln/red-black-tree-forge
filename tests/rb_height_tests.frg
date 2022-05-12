@@ -1,6 +1,6 @@
 #lang forge
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 // Tests that demonstrate the maximum height of a RBT for a given number of nodes.
 // Included to demontrate essential properties of RBTs.
 

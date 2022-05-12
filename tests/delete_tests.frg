@@ -1,6 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "../src/tree_electrum.frg"
+open "../src/tree.frg"
 open "../src/delete.frg"
 open "../src/insert.frg"
 

@@ -1,6 +1,6 @@
 #lang forge "final" "jpqtay573rwx8pc6@gmail.com"
 
-open "tree_electrum.frg"
+open "tree.frg"
 
 pred insert[n : Node] {
     // Assumption: tree is a wellformed BST
