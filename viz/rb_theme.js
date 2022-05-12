@@ -208,37 +208,37 @@ function setNodeXY(root, left, right, sx, sy, w_margin, h_factor, xmin = null, x
         // get current minimum and maximum x value of tree
         const min = Math.min(...x.values())
         const max = Math.max(...x.values())
-        var factor = (min-max)/2; // get new center of tree
+        var factor = (min - max) / 2; // get new center of tree
 
         // if xmin (and therefore xmax) is set, calculate new positions
         if (xmin != null) {
             // get the range you want for the tree and the one you currently have
-            const want = xmax-xmin
-            var have = max-min
+            const want = xmax - xmin
+            var have = max - min
             // if there is only one node(have is 0, make have = want so factor is 1)
             if (have == 0) {
                 have = want
             }
             // get multiplication factor between want and have
-            factor = want/have
+            factor = want / have
             // calculate difference between want and have max when factor is applied
-            var range = xmax - max*factor
+            var range = xmax - max * factor
             // if only one node, range is 0
             if (have == want) {
                 range = 0
             }
             // set new x values based on factor and range
             for (const [key, value] of x) {
-                x.set(key, value*factor + range);
+                x.set(key, value * factor + range);
             }
-        // if xmin isn't set, add factor to all x values to center tree
+            // if xmin isn't set, add factor to all x values to center tree
         } else {
             for (const [key, value] of x) {
                 x.set(key, value + factor);
             }
         }
-    }   
-    
+    }
+
     return [x, y, n]
 }
 
@@ -269,11 +269,11 @@ function bottomGraph() {
     /* Graph all instance trees at bottom of svg */
     for (let j = 0; j < numInst; j++) {
         // set center value based on inst number
-        var sx = j/numInst*500 + 200;
+        var sx = j / numInst * 500 + 200;
         const sy = 550
 
         // set xmin and xmax based on instance number and number of instances
-        treeGraph(instances[j], sx, sy, 100, 1/3, j/numInst*550 + radius, (j+1)/numInst*550  + radius - 50);
+        treeGraph(instances[j], sx, sy, 100, 1 / 3, j / numInst * 550 + radius, (j + 1) / numInst * 550 + radius - 50);
     }
 }
 
@@ -284,7 +284,7 @@ function treeGraph(inst, sx, sy, w_margin, factor, xmin = null, xmax = null) {
 
     if (inode.length > 8) {
         radius = 30
-        factor = factor/1.1
+        factor = factor / 1.1
     }
 
     // graph lines between nodes
@@ -292,7 +292,7 @@ function treeGraph(inst, sx, sy, w_margin, factor, xmin = null, xmax = null) {
         .selectAll("lines")
         .data(inode)
         .join("line")
-        .style("stroke-width", 15*factor)
+        .style("stroke-width", 15 * factor)
         .style("stroke", BLACK)
         .attr("x1", (d, i) => {
             return ix.get(d) - 5
@@ -329,7 +329,7 @@ function treeGraph(inst, sx, sy, w_margin, factor, xmin = null, xmax = null) {
         .attr("cy", (d, i) => {
             return iy.get(d)
         })
-        .attr("r", radius*factor)
+        .attr("r", radius * factor)
         .attr("fill", (d, i) => {
             if (icolors[d] == "Red0") {
                 return RED;
@@ -351,7 +351,7 @@ function treeGraph(inst, sx, sy, w_margin, factor, xmin = null, xmax = null) {
             return ix.get(d);
         })
         .attr("y", (d, i) => {
-            return iy.get(d) + 15*factor;
+            return iy.get(d) + 15 * factor;
         })
         .text((d, i) => {
             if (inulls[d] == "IsNull0" && itypes[d] == "DoubleBlack0") {
@@ -360,7 +360,7 @@ function treeGraph(inst, sx, sy, w_margin, factor, xmin = null, xmax = null) {
             return ivalues[d];
         })
         .attr("text-anchor", "middle")
-        .attr("font-size", 40*factor)
+        .attr("font-size", 40 * factor)
         .attr("fill", "#ffffff");
 }
 
@@ -374,7 +374,7 @@ function graphButtons(inst) {
             i--;
             d3.select(svg).selectAll("*").remove();
             graph(instances[i]);
-        // if no more previous instances
+            // if no more previous instances
         } else {
             d3.select(svg).selectAll("#top-text").remove();
             d3.select(svg)
@@ -393,11 +393,11 @@ function graphButtons(inst) {
     // function to plot next instance  
     function nextFunc() {
         // if there are next instances
-        if (i < numInst -1) {
+        if (i < numInst - 1) {
             i++;
             d3.select(svg).selectAll("*").remove();
             graph(instances[i]);
-        // if there are no more next instances
+            // if there are no more next instances
         } else {
             d3.select(svg).selectAll("#top-text").remove();
             d3.select(svg)
@@ -415,51 +415,51 @@ function graphButtons(inst) {
 
     // graph next button
     d3.select(svg)
-    .selectAll("next")
-    .data(instances)
-    .join("rect")
-    .attr("x", 480)
-    .attr("y", 10)
-    .attr("width", 80)
-    .attr("height", 30)
-    .on("click", (d, i) => { return nextFunc()});
+        .selectAll("next")
+        .data(instances)
+        .join("rect")
+        .attr("x", 480)
+        .attr("y", 10)
+        .attr("width", 80)
+        .attr("height", 30)
+        .on("click", (d, i) => { return nextFunc() });
 
     // graph prev button
     d3.select(svg)
-    .selectAll("prev")
-    .data(instances)
-    .join("rect")
-    .attr("x", 10)
-    .attr("y", 10)
-    .attr("width", 80)
-    .attr("height", 30)
-    .on("click", (d, i) => { return prevFunc()});
+        .selectAll("prev")
+        .data(instances)
+        .join("rect")
+        .attr("x", 10)
+        .attr("y", 10)
+        .attr("width", 80)
+        .attr("height", 30)
+        .on("click", (d, i) => { return prevFunc() });
 
     // graph text for next button
     d3.select(svg)
-    .selectAll("btn")
-    .data(instances)
-    .join("text")
-    .attr("x", 520)
-    .attr("y", 33)
-    .attr("text-anchor", "middle")
-    .attr("font-size", 25)
-    .attr("fill", "#ffffff")
-    .text("Next")
-    .on("click", (d, i) => { return nextFunc()});
+        .selectAll("btn")
+        .data(instances)
+        .join("text")
+        .attr("x", 520)
+        .attr("y", 33)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 25)
+        .attr("fill", "#ffffff")
+        .text("Next")
+        .on("click", (d, i) => { return nextFunc() });
 
     // graph text for prev button
     d3.select(svg)
-    .selectAll("btn")
-    .data(instances)
-    .join("text")
-    .attr("x", 50)
-    .attr("y", 33)
-    .attr("text-anchor", "middle")
-    .attr("font-size", 25)
-    .attr("fill", "#ffffff")
-    .text("Prev")
-    .on("click", (d, i) => { return prevFunc()});
+        .selectAll("btn")
+        .data(instances)
+        .join("text")
+        .attr("x", 50)
+        .attr("y", 33)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 25)
+        .attr("fill", "#ffffff")
+        .text("Prev")
+        .on("click", (d, i) => { return prevFunc() });
 
 }
 
