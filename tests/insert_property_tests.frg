@@ -12,7 +12,7 @@ option max_tracelength 5
 pred simpleInsertTrace {
     init
     insertTransition
-    always (
+    next_state always (
         insertRotateTransition or
         insertRecolorTransition or
         terminateTransition

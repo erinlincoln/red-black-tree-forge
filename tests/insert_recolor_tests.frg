@@ -83,7 +83,7 @@ test expect {
     insertAndRecolorCanProduceWellformedRBT: {
         {
             wellformedRBT
-            some n: Node | { insert[n] and next_state recolor[n] }
+            some n: Node | { insert[n] and next_state insertRecolor[n] }
         } => next_state next_state wellformedRBT
     } for 8 Node is sat
 }

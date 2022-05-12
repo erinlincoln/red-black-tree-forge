@@ -9,237 +9,185 @@ open "../src/insert.frg"
 // tests. Note: commented out tests indicate that the test is failing. Delete
 // still has bugs, causing the tests to fail.
 
-// run {
-//     some n1, n2, n3, n4, n5, n6, n7, db : Node | {
-
-//             // starting state
-//             value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
-//                 + n6 -> 2 + n7 -> 5 + db -> 2
-//             // left = n1 -> n2  // + n2 -> n4 + n3 -> n6
-//             // right = n1 -> n3 // + n2 -> n5 + n3 -> n7
-//             color = (n1 + n2 + n3 + n4 + n5 + n6 + n7 + db) -> Black
-//             type = db -> DoubleBlack
-//             nullNode = db->IsNull
-
-//             // // replace 2 (n6) with db
-//             value' = value
-//             // left' = n1 -> n2 + n2 -> n4 + n3 -> db
-//             // right' = right
-//             color' = color
-//             type' = type
-//             nullNode' = nullNode
-
-//             // // case 3: make 3 (n3) DoubleBlack and delete db, make 5 (n7) red
-//             value'' = value
-//             // left = n1 -> n2 + n2 -> n4
-//             // right'' = right
-//             // color'' = (n7) -> Red + (n1 + n2 + n3 + n4 + n5 + n6 + n7 + db) -> Black
-//             // type'' = (db + n3) -> DoubleBlack
-//             nullNode'' = nullNode
-
-//             // // case 3: root becomes db
-//             value''' = value
-//             // left''' = left''
-//             // right''' = right
-//             // color''' = color''
-//             // type''' = (db + n1) -> DoubleBlack
-//             nullNode''' = nullNode
-
-//             // // case 2: root becomes black
-//             value'''' = value
-//             // left'''' = left''
-//             // right'''' = right
-//             type'''' = type
-//             nullNode'''' = nullNode
-
-//         }
-
-//         traces
-//         deleteTransition
-//         next_state deleteRecolorTransition
-//         next_state deleteRecolorTransition
-    
-// } for exactly 8 Node
-
 // examples for each of the deletion cases
 test expect {
 
     // case 1: deleted node is red leaf
-    // deleteRedLeaf: {
-    //     //              0
-    //     //            /   \
-    //     //          -3     3
-    //     //         /  \   /  \
-    //     //       -5   -2  2   5
-    //     //                   /
-    //     //                  4 <- delete
-    //     some n1, n2, n3, n4, n5, n6, n7, n8 : Node | {
+    deleteRedLeaf: {
+        //              0
+        //            /   \
+        //          -3     3
+        //         /  \   /  \
+        //       -5   -2  2   5
+        //                   /
+        //                  4 <- delete
+        some n1, n2, n3, n4, n5, n6, n7, n8 : Node | {
 
-    //         // starting state
-    //         value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
-    //             + n6 -> 2 + n7 -> 5 + n8 -> 4
+            // starting state
+            value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
+                + n6 -> 2 + n7 -> 5 + n8 -> 4
 
-    //         left = n1 -> n2 + n2 -> n4 + n3 -> n6 + n7 -> n8
-    //         right = n1 -> n3 + n2 -> n5 + n3 -> n7
+            left = n1 -> n2 + n2 -> n4 + n3 -> n6 + n7 -> n8
+            right = n1 -> n3 + n2 -> n5 + n3 -> n7
 
-    //         color = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
+            color = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-    //         no type
-    //         no nullNode
+            no type
+            no nullNode
 
-    //         // delete n8
-    //         value' = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
-    //             + n6 -> 2 + n7 -> 5 + n8 -> 4
+            // delete n8
+            value' = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
+                + n6 -> 2 + n7 -> 5 + n8 -> 4
 
-    //         left' = n1 -> n2 + n2 -> n4 + n3 -> n6
-    //         right' = n1 -> n3 + n2 -> n5 + n3 -> n7
+            left' = n1 -> n2 + n2 -> n4 + n3 -> n6
+            right' = n1 -> n3 + n2 -> n5 + n3 -> n7
 
-    //         color' = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
+            color' = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-    //         no type
-    //         no nullNode
-    //     }
+            no type
+            no nullNode
+        }
 
-    //     wellformedRBT
-    //     deleteTraces
-    //     deleteTransition
+        wellformedRBT
+        deleteTraces
+        deleteTransition
 
-    // } for exactly 8 Node is sat
+    } for exactly 8 Node is sat
 
-    // deleteRed: {
-    //     //              0
-    //     //            /   \
-    //     //          -3     3 <- delete and replace with (4)
-    //     //         /  \   /  \
-    //     //       -5   -2  2   5
-    //     //                   /
-    //     //                  4
-    //     some n1, n2, n3, n4, n5, n6, n7, n8 : Node | {
+    deleteRed: {
+        //              0
+        //            /   \
+        //          -3     3 <- delete and replace with (4)
+        //         /  \   /  \
+        //       -5   -2  2   5
+        //                   /
+        //                  4
+        some n1, n2, n3, n4, n5, n6, n7, n8 : Node | {
 
-    //         // starting state
-    //         value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
-    //             + n6 -> 2 + n7 -> 5 + n8 -> 4
+            // starting state
+            value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
+                + n6 -> 2 + n7 -> 5 + n8 -> 4
 
-    //         left = n1 -> n2 + n2 -> n4 + n3 -> n6 + n7 -> n8
-    //         right = n1 -> n3 + n2 -> n5 + n3 -> n7
+            left = n1 -> n2 + n2 -> n4 + n3 -> n6 + n7 -> n8
+            right = n1 -> n3 + n2 -> n5 + n3 -> n7
 
-    //         color = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
+            color = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-    //         no type
-    //         no nullNode
+            no type
+            no nullNode
 
-    //         // replace n3 (3) with n8 (4) and delete duplicate n8
-    //         value' = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
-    //             + n6 -> 2 + n7 -> 5 + n8 -> 4
+            // replace n3 (3) with n8 (4) and delete duplicate n8
+            value' = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
+                + n6 -> 2 + n7 -> 5 + n8 -> 4
 
-    //         left' = n1 -> n2 + n2 -> n4 + n8 -> n6
-    //         right' = n1 -> n8 + n2 -> n5 + n8 -> n7
+            left' = n1 -> n2 + n2 -> n4 + n8 -> n6
+            right' = n1 -> n8 + n2 -> n5 + n8 -> n7
 
-    //         color' = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
+            color' = (n2 + n3 + n8) -> Red + (n1 + n4 + n5 + n6 + n7) -> Black
 
-    //     wellformedRBT
-    //     deleteTraces
-    //     deleteTransition
+            wellformedRBT
+            deleteTraces
+            deleteTransition
+        }
 
-    // } for exactly 8 Node is sat
+    } for exactly 8 Node is sat
 
-    // // example 2: case 3 (db's sibling is red)
-    // dbRedSibling: {
-    //     //              0
-    //     //            /   \
-    //     //          -3     3 
-    //     //                /  \
-    //     //     delete -> 2    5
-    //     some n1, n2, n3, n4, n5 : Node | {
-    //         // starting state
-    //         value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> 2 + n5 -> 5
-    //         left = n1 -> n2 + n3 -> n4
-    //         right = n1 -> n3 + n3 -> n5
-    //         color = (n1 + n2 + n4 + n5) -> Black + (n3) -> Red
-    //         no type
-    //         no nullNode
+    // example 2: case 3 (db's sibling is red)
+    dbRedSibling: {
+        //              0
+        //            /   \
+        //          -3     3 
+        //                /  \
+        //     delete -> 2    5
+        some n1, n2, n3, n4, n5 : Node | {
+            // starting state
+            value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> 2 + n5 -> 5
+            left = n1 -> n2 + n3 -> n4
+            right = n1 -> n3 + n3 -> n5
+            color = (n1 + n2 + n4 + n5) -> Black + (n3) -> Red
+            no type
+            no nullNode
 
-    //         // 2 (n4) is replaced with db
-    //         value' = value
-    //         left' = n1 -> n2 + n3-> n4
-    //         right' = right
-    //         color' = color
-    //         type' = (n4) -> DoubleBlack
-    //         nullNode' = n4 -> IsNull
+            // 2 (n4) is replaced with db
+            value' = value
+            left' = n1 -> n2 + n3-> n4
+            right' = right
+            color' = color
+            type' = (n4) -> DoubleBlack
+            nullNode' = n4 -> IsNull
 
-    //         // db is deleted
-    //         value'' = value
-    //         left'' = n1 -> n2
-    //         right'' = right
-    //         color'' = (n1 + n2 + n3 + n4) -> Black + (n5) -> Red
-    //         no type''
-    //         no nullNode''
-    //     }
+            // db is deleted
+            value'' = value
+            left'' = n1 -> n2
+            right'' = right
+            color'' = (n1 + n2 + n3 + n4) -> Black + (n5) -> Red
+            no type''
+            no nullNode''
+        }
 
-    //     init
-    //     deleteTransition
-    //     next_state deleteRecolorTransition
-    //     next_state next_state terminateTransition
+        init
+        deleteTransition
+        next_state deleteRecolorTransition
+        next_state next_state terminateTransition
 
-    // } for exactly 5 Node is sat
+    } for exactly 5 Node is sat
 
     // example 3: case 3 + case 2 (db is root)
-    // dbRoot: {
-    //     //              0
-    //     //            /   \
-    //     //          -3     3 
-    //     //         /  \   /  \
-    //     //       -5   -2  2   5
-    //     //                ^ delete
-    //     some n1, n2, n3, n4, n5, n6, n7 : Node | {
+    dbRoot: {
+        //              0
+        //            /   \
+        //          -3     3 
+        //         /  \   /  \
+        //       -5   -2  2   5
+        //                ^ delete
+        some n1, n2, n3, n4, n5, n6, n7 : Node | {
 
-    //         // starting state
-    //         value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
-    //             + n6 -> 2 + n7 -> 5
-    //         left = n1 -> n2 + n2 -> n4 + n3 -> n6
-    //         right = n1 -> n3 + n2 -> n5 + n3 -> n7
-    //         color = (n1 + n2 + n3 + n4 + n5 + n6 + n7) -> Black
-    //         no type
-    //         no nullNode
+            // starting state
+            value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
+                + n6 -> 2 + n7 -> 5
+            left = n1 -> n2 + n2 -> n4 + n3 -> n6
+            right = n1 -> n3 + n2 -> n5 + n3 -> n7
+            color = (n1 + n2 + n3 + n4 + n5 + n6 + n7) -> Black
+            no type
+            no nullNode
 
-    //         // // replace 2 (n6) with db
-    //         value' = value
-    //         left' = left
-    //         right' = right
-    //         color' = color
-    //         type' = n6 -> DoubleBlack
-    //         nullNode' = n6 -> IsNull
+            // // replace 2 (n6) with db
+            value' = value
+            left' = left
+            right' = right
+            color' = color
+            type' = n6 -> DoubleBlack
+            nullNode' = n6 -> IsNull
 
-    //         // case 3: make 3 (n3) DoubleBlack and delete db, make 5 (n7) red
-    //         value'' = value
-    //         left'' = n1 -> n2 + n2 -> n4
-    //         right'' = right
-    //         color'' = (n7) -> Red + (n1 + n2 + n3 + n4 + n5 + n6) -> Black
-    //         type'' = (n3) -> DoubleBlack
-    //         no nullNode''
+            // case 3: make 3 (n3) DoubleBlack and delete db, make 5 (n7) red
+            value'' = value
+            left'' = n1 -> n2 + n2 -> n4
+            right'' = right
+            color'' = (n7) -> Red + (n1 + n2 + n3 + n4 + n5 + n6) -> Black
+            type'' = (n3) -> DoubleBlack
+            no nullNode''
 
-    //         // // case 3: root becomes db
-    //         value''' = value
-    //         left''' = left''
-    //         right''' = right
-    //         color''' = (n7 + n2) -> Red + (n1 + n3 + n4 + n5 + n6) -> Black
-    //         type''' = (n1) -> DoubleBlack
-    //         no nullNode'''
+            // // case 3: root becomes db
+            value''' = value
+            left''' = left''
+            right''' = right
+            color''' = (n7 + n2) -> Red + (n1 + n3 + n4 + n5 + n6) -> Black
+            type''' = (n1) -> DoubleBlack
+            no nullNode'''
 
-    //         // // case 2: root becomes black
-    //         value'''' = value
-    //         left'''' = left''
-    //         right'''' = right
-    //         color'''' = color'''
-    //         no type''''
-    //         no nullNode''''
-    //     }
+            // // case 2: root becomes black
+            value'''' = value
+            left'''' = left''
+            right'''' = right
+            color'''' = color'''
+            no type''''
+            no nullNode''''
+        }
 
-    //     traces_del
-    //     delete_transition
-    //     next_state delete_recolor_transition
-    //     next_state next_state terminateTransition
-    // } for exactly 7 Node is sat
+        deleteTraces
+        deleteTransition
+        eventually wellformedRBT
+    } for exactly 7 Node is sat
 
     //example 4: case 4(db's sibling is red)
     dbSibRed: {
@@ -252,7 +200,7 @@ test expect {
         //                  1B  5B
         some n1, n2, n3, n4, n5, n6, n7, n8, n9 : Node | {
             value = n1 -> 0 + n2 -> -3 + n3 -> 3 + n4 -> -5 + n5 -> -2
-                + n6 -> 2 + n7 -> 4 + n8 -> 1 + n9 -> 5
+                + n6 -> 2 + n7 -> 5 + n8 -> 4 + n9 -> 6
             left = n1 -> n2 + n2 -> n4 + n3 -> n6 + n7 -> n8
             right = n1 -> n3 + n2 -> n5 + n3 -> n7 + n7 -> n9
             color = (n1 + n2 + n3 + n4 + n5 + n6 + n8 + n9) -> Black + (n7) -> Red
@@ -274,19 +222,12 @@ test expect {
             color'' = (n1 + n2 + n4 + n5 + n6 +n7 + n8 + n9) -> Black + (n3) -> Red
             type'' = n6 -> DoubleBlack
             nullNode'' = n6 -> IsNull
-
-            value''' = value
-            left''' = n1 -> n2 + n2 -> n4 + n7 -> n3
-            right''' = n1 -> n7 + n2 -> n5 + n7 -> n9 + n3 -> n8
-            color''' = (n1 + n2 + n4 + n5 + n6 +n7 + n8 + n9) -> Black + (n3) -> Red
-            no type'''
-            no nullNode'''
         }
 
         deleteTraces
         deleteTransition
         next_state deleteRecolorTransition
-        next_state deleteRecolorTransition
+        eventually wellformedRBT
     } for exactly 9 Node is sat
 
     // case 4:
@@ -319,7 +260,7 @@ test expect {
 
             delete[n4]
         }
-        traces_del
+        deleteTraces
         eventually wellformedRBT
     } for exactly 9 Node is sat
 }
@@ -370,7 +311,7 @@ test expect {
         deleteTraces
         #{treeNode} = 7
         deleteTransition
-    } for exactly 8 Node is sat
+    } for 8 Node is sat
 
     // can delete such that there is no recolor or rotation
     deleteNoRecolorNoRotation: {
@@ -387,13 +328,6 @@ test expect {
     } for exactly 5 Node is sat
 
     // PROPERTIES
-    // deletion eventually means wellformed
-    deleteToWellformed: {
-        deleteTraces => {
-            deleteTransition => eventually wellformedRBT
-        }
-    } is theorem
-
     // double black node implies not wellformed
     dbNotWellformed: {
         deleteTraces => {
@@ -419,20 +353,19 @@ test expect {
 }
 
 test expect {
-    // PROPERTY TESTS
     tracesBehavior: {
-        traces_del => always {
+        deleteTraces => always {
             -- binary tree always maintained at each intermediate step
-            wellformed_binary
+            wellformedBST
 
             -- at the end, we have a wellformed red-black tree
-            terminateTransition => wellformed_rb
+            terminateTransition => wellformedRBT
 
             // eventually wellformed_rb after delete
-            delete_transition => eventually wellformed_rb
+            deleteTransition => eventually wellformedRBT
 
             // only delete_recolor when current state is not wellformed
-            delete_recolor_transition => not wellformed_rb
+            deleteRecolorTransition => not wellformedRBT
         }
-    } for 6 Node is theorem
+    } for 4 Node is theorem
 }

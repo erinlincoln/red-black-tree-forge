@@ -354,14 +354,17 @@ test expect {
 
     // all left nodes are less than right nodes
     leftLessThanRightTest: { wellformedBST => {
-        all n: Node | {some n.left and some n.right} => {n.left.value <= n.right.value}
+        all n: Node | {
+            (some n.left and some n.right) and
+            (no n.left.nullNode and no n.right.nullNode and no n.nullNode)
+        } => {n.left.value <= n.right.value}
     } } is theorem
 
     // Every node in a left sub-tree has value <= parent, and opposite for right
     sortedTree: { wellformedBST => {
-        all p: Node | {
-            all l: (p.left + p.left.children) | l.value <= p.value
-            all r: (p.right + p.right.children) | r.value >= p.value
+        all p: Node | no p.nullNode => {
+            all l: (p.left + p.left.children) | no l.nullNode => l.value <= p.value
+            all r: (p.right + p.right.children) | no r.nullNode => r.value >= p.value
         }
     } } is theorem
     
