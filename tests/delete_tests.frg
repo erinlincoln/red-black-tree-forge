@@ -55,9 +55,9 @@ open "../src/insert.frg"
 //         }
 
 //         traces
-//         delete_transition
-//         next_state delete_recolor_transition
-//         next_state delete_recolor_transition
+//         deleteTransition
+//         next_state deleteRecolorTransition
+//         next_state deleteRecolorTransition
     
 // } for exactly 8 Node
 
@@ -101,8 +101,8 @@ test expect {
         }
 
         wellformedRBT
-        traces_del
-        delete_transition
+        deleteTraces
+        deleteTransition
 
     } for exactly 8 Node is sat
 
@@ -142,8 +142,8 @@ test expect {
         }
 
         wellformedRBT
-        traces_del
-        delete_transition
+        deleteTraces
+        deleteTransition
 
     } for exactly 8 Node is sat
 
@@ -182,8 +182,8 @@ test expect {
         }
 
         init
-        delete_transition
-        next_state delete_recolor_transition
+        deleteTransition
+        next_state deleteRecolorTransition
         next_state next_state terminateTransition
 
     } for exactly 6 Node is sat
@@ -240,10 +240,10 @@ test expect {
 
         }
 
-        traces_del
-        delete_transition
-        next_state delete_recolor_transition
-        next_state delete_recolor_transition
+        deleteTraces
+        deleteTransition
+        next_state deleteRecolorTransition
+        next_state deleteRecolorTransition
     } for exactly 8 Node is sat
 
     //example 4: case 4(db's sibling is red)
@@ -294,30 +294,30 @@ test expect {
 test expect {
     // vacuous: can delete
     vacuous: {
-        traces_del
-        delete_transition
+        deleteTraces
+        deleteTransition
     } is sat
 
     // CASES
     // cannot delete in empty tree
     cannotDeleteEmpty : {
-        traces_del
+        deleteTraces
         no root
         some n : Node | delete[n]
     } for exactly 2 Node is unsat
 
     // can delete root node in empty tree
     deleteRootEmpty : {
-        traces_del
+        deleteTraces
         some root
         no root.left
         no root.right
-        delete_transition
+        deleteTransition
     } for exactly 2 Node is sat
 
     // can delete root node in not empty tree
     deleteRootLR : {
-        traces_del
+        deleteTraces
         some root.left
         some root.right
         delete[root]
@@ -325,51 +325,51 @@ test expect {
 
     // can delete in 3 node tree
     delete3Nodes : {
-        traces_del
+        deleteTraces
         some root.left
         some root.right
-        delete_transition
+        deleteTransition
     } for exactly 4 Node is sat
 
     // // can delete in height 3 tree
     deleteHeight3: {
-        traces_del
+        deleteTraces
         #{treeNode} = 7
-        delete_transition
+        deleteTransition
     } for exactly 8 Node is sat
 
     // can delete such that there is no recolor or rotation
     deleteNoRecolorNoRotation: {
-        traces_del
-        delete_transition
-        not (eventually delete_recolor_transition)
+        deleteTraces
+        deleteTransition
+        not (eventually deleteRecolorTransition)
         not (eventually insertRotateTransition)
     } for exactly 3 Node is sat
 
     // can delete node with children
     deleteWithChildren: {
-        traces_del
+        deleteTraces
         some n : Node | {delete[n] and some n.children}
     } for exactly 5 Node is sat
 
     // PROPERTIES
     // deletion eventually means wellformed
     deleteToWellformed: {
-        traces_del => {
-            delete_transition => eventually wellformedRBT
+        deleteTraces => {
+            deleteTransition => eventually wellformedRBT
         }
     } is theorem
 
     // double black node implies not wellformed
     dbNotWellformed: {
-        traces_del => {
+        deleteTraces => {
             some dbNode => not wellformedRBT
         }
     } is theorem
 
     // if a node is db, it will eventually not be in tree
     dbToOutOfTree: {
-        traces_del => {
+        deleteTraces => {
             some dbNode => eventually no dbNode
         }
     } is theorem
@@ -378,7 +378,7 @@ test expect {
     
     // can't delete a node not in tree
     cannotDeleteOutOfTree: {
-        traces_del => { all n: {Node - treeNode} | {
+        deleteTraces => { all n: {Node - treeNode} | {
             not delete[n]
         } }
     } is theorem

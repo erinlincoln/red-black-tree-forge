@@ -503,16 +503,16 @@ pred recolorDelete {
     }
 }
 
-pred delete_transition {
+pred deleteTransition {
     some n: Node | delete[n]
 }
 
-pred delete_recolor_transition {
+pred deleteRecolorTransition {
     no nextInsertNode
     recolorDelete
 }
 
-pred traces_del {
+pred deleteTraces {
     init
 
     always {
@@ -520,11 +520,9 @@ pred traces_del {
             insertTransition or
             insertRotateTransition or
             insertRecolorTransition or
-            delete_transition or
-            delete_recolor_transition or
+            deleteTransition or
+            deleteRecolorTransition or
             terminateTransition
         )
     }
 }
-
-run { traces_del } for exactly 6 Node
