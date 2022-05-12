@@ -343,7 +343,7 @@ test expect {
         traces_del
         delete_transition
         not (eventually delete_recolor_transition)
-        not (eventually del_rotate_transition)
+        not (eventually insertRotateTransition)
     } for exactly 3 Node is sat
 
     // can delete node with children

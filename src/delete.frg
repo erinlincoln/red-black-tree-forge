@@ -181,11 +181,6 @@ pred delete[n : Node] {
     nullNode' = nullNode
 }
 
-// PREVENTS IMPORT ISSUES WITH IMPORTING INSERT AND DELETE SIMULTANEOUSLY
-pred del_rotate_transition{
-    insertRotateTransition
-}
-
 pred removeDB[db: Node] {
     no db.left'
     no db.right'
