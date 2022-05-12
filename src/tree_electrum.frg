@@ -139,9 +139,9 @@ pred wellformed_binary {
     wellformed_tree
 
     // Left is less than parent and right is greater than the parent
-    all p: treeNode | {
-        all c: (p.left + p.left.children) | c.value < p.value
-        all c: (p.right + p.right.children) | c.value > p.value
+    all p: treeNode | no p.nullNode => {
+        all c: (p.left + p.left.children) | no c.nullNode => c.value < p.value
+        all c: (p.right + p.right.children) | no c.nullNode => c.value > p.value
     }
 }
 
@@ -183,4 +183,5 @@ pred wellformed_rb {
 
     -- included for delete:
     no treeNode.type
+    no treeNode.nullNode
 }

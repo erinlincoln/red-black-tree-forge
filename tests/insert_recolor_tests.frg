@@ -26,7 +26,7 @@ test expect {
       left = n3 -> n2 + n2 -> n1
       right = n3 -> n4
 
-      recolor[n1]
+      insertRecolor[n1]
 
       next_state {
         n1.color = Red
@@ -55,7 +55,7 @@ test expect {
       left = n5 -> n3 + n3 -> n2 + n2 -> n1
       right = n5 -> n6 + n3 -> n4
 
-      recolor[n1]
+      insertRecolor[n1]
 
       next_state {
         color = (n1 + n3) -> Red + (n2 + n4 + n5 + n6) -> Black
@@ -66,12 +66,12 @@ test expect {
 
   neverCanRecolorIfWellformed: {
     wellformed_rb => {
-      no n: Node | recolor[n]
+      no n: Node | insertRecolor[n]
     }
   } for 6 Node is theorem
 
   recoloringOnlyChangesThreeNodeColors: {
-    (wellformed_tree and (some n: Node | recolor[n])) => {
+    (wellformed_tree and (some n: Node | insertRecolor[n])) => {
       left' = left
       right' = right
       #((color' - color).Color) <= 3
@@ -83,7 +83,7 @@ test expect {
   insertAndRecolorCanProduceWellformedRBT: {
     {
       wellformed_rb
-      some n: Node | { insert[n] and next_state recolor[n] }
+      some n: Node | { insert[n] and next_state insertRecolor[n] }
     } => next_state next_state wellformed_rb
   } for 8 Node is sat
 }

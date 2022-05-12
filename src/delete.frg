@@ -5,9 +5,6 @@ open "insert.frg"
 
 // Algorithms
 fun inorderSuccessor: set Node -> Node {
-//    some { n, succ : Node | succ in n.right.^left and no succ.left } => 
-    // { n, succ : Node | succ in n.right.^left and no succ.left }
-//    else {n, succ : Node | n.left = succ}
     {n, succ : Node | no n.right.left => {
         succ = n.right
     } else {
@@ -23,14 +20,6 @@ pred delete[n : Node] {
 
     -- Node must be in tree
     n in treeNode
-
-    -- Node not in next state
-    // not (n in treeNode')
-
-    -- remove the node from the tree
-    // no n.parent'
-    // no n.left'
-    // no n.right'
 
     -- the node is a leaf
     no n.left and no n.right => {
@@ -81,6 +70,15 @@ pred delete[n : Node] {
         n.color = Black and n.right.color = Black => {
             n.right.type' = DoubleBlack
             no n.right.nullNode'
+            n.left' = n.right.left
+            n.right' = n.right.right
+            n.right.left' = n.left
+            n.right.right' = n.right
+        }else {
+            no n.left'
+            no n.right'
+            no n.right.left'
+            no n.right.right'
         }
         n.right.color' = Black
 
@@ -98,6 +96,15 @@ pred delete[n : Node] {
         n.color = Black and n.left.color = Black => {
             n.left.type' = DoubleBlack
             no n.left.nullNode'
+            n.left' = n.left.left
+            n.right' = n.left.right
+            n.left.left' = n.left
+            n.left.right' = n.right
+        } else {
+            no n.left'
+            no n.right'
+            no n.left.left'
+            no n.left.right'
         }
         n.left.color' = Black
 
@@ -486,17 +493,17 @@ pred recolorDelete {
                     db.farNephew.left' = db.farNephew.left
                     db.farNephew.right' = db.farNephew.right
                 } else {
-                    replaceGrandparent[sib, db.farNephew]
+                    replaceGrandparent[sib, db.nearNephew]
 
-                    db.farNephew.left' = sib
-                    db.farNephew.right' = db.farNephew.right
+                    db.nearNephew.left' = sib
+                    db.nearNephew.right' = db.nearNephew.right
 
                     sib.left' = sib.left
-                    sib.right' = db.farNephew.left
+                    sib.right' = db.nearNephew.left
 
                     -- stays the same:
-                    db.nearNephew.left' = db.nearNephew.left
-                    db.nearNephew.right' = db.nearNephew.right
+                    db.farNephew.left' = db.farNephew.left
+                    db.farNephew.right' = db.farNephew.right
                 }
 
                 -- stays the same:
@@ -506,9 +513,6 @@ pred recolorDelete {
                 db.type' = db.type
                 db.nullNode' = db.nullNode
 
-                // db.parent.left' = db.parent.left
-                // db.parent.right' = db.parent.right
-                // db.parent.color' = db.parent.color
                 db.parent.type' = db.parent.type
                 db.parent.nullNode' = db.parent.nullNode
 
@@ -546,7 +550,11 @@ pred recolorDelete {
                     sib.left' = db.parent
                     sib.right' = sib.right
 
-                    db.parent.left' = db.parent.left
+                    no db.nullNode => {
+                        db.parent.left' = db.parent.left
+                    } else {
+                        no db.parent.left'
+                    }
                     db.parent.right' = sib.left
                 } else {
                     replaceGrandparent[db.parent, sib]
@@ -555,7 +563,11 @@ pred recolorDelete {
                     sib.right' = db.parent
 
                     db.parent.left' = sib.right
-                    db.parent.right' = db.parent.right
+                    no db.nullNode => {
+                        db.parent.right' = db.parent.right
+                    } else {
+                        no db.parent.right'
+                    }
                 }
 
                 -- If DB is null, remove from tree, otherwise
@@ -613,9 +625,6 @@ pred traces_del {
 
     always {
         (
-            insertTransition or
-            insertRotateTransition or
-            insertRecolorTransition or
             delete_transition or
             delete_recolor_transition or
             terminateTransition
@@ -624,16 +633,6 @@ pred traces_del {
 }
 
 run { 
-    init
-    some n1, n2, n3, n4, n5, n6, n7, n8 : Node | {
-        value = n1 -> 0 + n2-> -4 + n3 -> 4 + n4->-6 + n5->-2 + n6->2 + n7->6 + n8 -> 3
-
-        left = n1 -> n2 + n2->n4 + n3->n6
-        right = n1 -> n3 + n2->n5 + n3-> n7 + n6->n8
-
-        color = (n1 + n2 + n6 + n7) -> Black + (n3 + n4 + n5 + n8) -> Red
-
-        delete[n3]
-    }
     traces_del
-} for 10 Node
+    not (always wellformed_binary)
+} for 4 Node

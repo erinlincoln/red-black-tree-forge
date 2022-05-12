@@ -25,7 +25,7 @@ test expect {
       left = n3 -> n2 + n2 -> n1
       right = n3 -> n4
 
-      rotate[n1]
+      insertRotate[n1]
     }
   } for exactly 4 Node is sat
 
@@ -44,7 +44,7 @@ test expect {
       left = n3 -> n1
       right = n1 -> n2 + n3 -> n4
 
-      rotate[n2]
+      insertRotate[n2]
     }
   } for exactly 4 Node is sat
 
@@ -63,7 +63,7 @@ test expect {
       left = n2 -> n1
       right = n2 -> n3 + n3 -> n4
 
-      rotate[n4]
+      insertRotate[n4]
     }
   } for exactly 4 Node is sat
 
@@ -82,12 +82,12 @@ test expect {
       left = n2 -> n1 + n4 -> n3
       right = n2 -> n4
 
-      rotate[n3]
+      insertRotate[n3]
     }
   } for exactly 4 Node is sat
 
   rotatePreservesAllNodes: {
-    (wellformed_binary and (some n: treeNode | rotate[n])) =>
+    (wellformed_binary and (some n: treeNode | insertRotate[n])) =>
       treeNode' = treeNode
   } for 5 Node is theorem
 }

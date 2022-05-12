@@ -19,6 +19,7 @@ pred insert[n : Node] {
 
     -- New node must not be DoubleBlack
     no n.type
+    no n.nullNode
 
     -- All colors stay the same except
     -- the new node is red

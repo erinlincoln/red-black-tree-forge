@@ -33,7 +33,7 @@ test expect {
             -- binary tree always maintained at each intermediate step
             wellformed_binary
 
-            -- at the end, we have a wellformed red-black tree
+            // -- at the end, we have a wellformed red-black tree
             terminateTransition => wellformed_rb
 
             -- if we do an insert, we will eventually have a wellformed red-black tree
@@ -41,15 +41,8 @@ test expect {
 
             -- only rotate or recolor when the current state is not well-formed
             (insertRotateTransition or insertRecolorTransition) => not wellformed_rb
-
-            -- TODO: NEED TO MOVE TO DELETE TESTS
-            // // eventually wellformed_rb after delete
-            // delete_transition => eventually wellformed_rb
-
-            // // only delete_recolor when current state is not wellformed
-            // delete_recolor_transition => not wellformed_rb
         }
-    } for 6 Node is theorem
+    } for 4 Node is theorem
 
     canInsertWithoutRecolorOrRotate: {
         insertTraces
