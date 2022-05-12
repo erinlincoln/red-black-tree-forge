@@ -40,7 +40,7 @@ insertRotateTransition/insertRecolorTransition:
 
 These predicates represent the intermediate steps in the insertion algorithm. Once a node has been added, the function `nextInsertNode` can identify a node that is causing the tree to not be wellformed. Then, depending on the current coloring, the tree will either be rotated or recolored. If the uncle of the nextInsertNode is Red, then the tree can simply be recolored. If the uncle is Black, then that means that a rotation will take place. Thus, each step of the algorithm takes place as it rotates and recolors until it is wellformed.
 
-terminate_transition:
+terminateTransition:
 
 This predicate is the last state after the tree changes. If the termination predicate can be reached, this means that there is no `nextInsertNode` and the tree must be wellformed.
 

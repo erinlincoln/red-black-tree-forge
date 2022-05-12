@@ -5,8 +5,14 @@ open "insert.frg"
 
 // Algorithms
 fun inorderSuccessor: set Node -> Node {
-   some { n, succ : Node | succ in n.right.^left and no succ.left } => { n, succ : Node | succ in n.right.^left and no succ.left }
-   else {n, succ : Node | n.left = succ}
+//    some { n, succ : Node | succ in n.right.^left and no succ.left } => 
+    // { n, succ : Node | succ in n.right.^left and no succ.left }
+//    else {n, succ : Node | n.left = succ}
+    {n, succ : Node | no n.right.left => {
+        succ = n.right
+    } else {
+        succ in n.right.^left and no succ.left
+    }}
 }
 
 pred delete[n : Node] {
@@ -19,18 +25,18 @@ pred delete[n : Node] {
     n in treeNode
 
     -- Node not in next state
-    not (n in treeNode')
+    // not (n in treeNode')
 
     -- remove the node from the tree
-    no n.parent'
-    no n.left'
-    no n.right'
+    // no n.parent'
+    // no n.left'
+    // no n.right'
 
     -- the node is a leaf
     no n.left and no n.right => {
         n.color = Red => {
             n = root => {
-                no root' 
+                no root'
             } else {
                 root' = root
 
@@ -42,22 +48,23 @@ pred delete[n : Node] {
                     n.parent.left' = n.parent.left
                 }
             }
+            no n.parent'
+            no n.left'
+            no n.right'
         } else {
-            some db : Node | {
-                db.type = DoubleBlack
-                db.color = Black
-                db.nullNode = IsNull
-                db not in treeNode
-                db.value = n.value
+            root' = root
+            n.type' = DoubleBlack
+            n.color' = Black
+            n.nullNode' = IsNull
+            no n.left'
+            no n.right'
 
-                n = root => {
-                    root' = db
-                } else {
-                    root' = root
-                    replaceGrandparent[n, db]
-                }
-            }
+            n.parent.left' = n.parent.left
+            n.parent.right' = n.parent.right
         }
+
+        n.parent.color' = n.parent.color
+
         n.inorderSuccessor.left' = n.inorderSuccessor.left
         n.inorderSuccessor.right' = n.inorderSuccessor.right
         n.inorderSuccessor.color' = n.inorderSuccessor.color
@@ -74,10 +81,8 @@ pred delete[n : Node] {
         n.color = Black and n.right.color = Black => {
             n.right.type' = DoubleBlack
             no n.right.nullNode'
-            n.right.color' = Black
-        } else {
-            n.right.color' = Black
         }
+        n.right.color' = Black
 
         n.inorderSuccessor.left' = n.inorderSuccessor.left
         n.inorderSuccessor.right' = n.inorderSuccessor.right
@@ -107,54 +112,64 @@ pred delete[n : Node] {
 
     // -- the node has two children
     some n.left and some n.right => {
+
+        -- REWRITTEN
         replaceGrandparent[n, n.inorderSuccessor]
 
-        -- CHANGED - added if 
-        n.inorderSuccessor != n.left => {
-            n.inorderSuccessor.left' = n.left
-            n.inorderSuccessor.right' = n.right
+        no n.left'
+        no n.right'
+
+        n.inorderSuccessor.left' = n.left
+        n.left.color' = n.left.color
+
+        -- after replacing, n is a red leaf
+        {
+            n.inorderSuccessor = n.right
+            no n.inorderSuccessor.right
+            n.inorderSuccessor.color = Red
+        } => {
+            no n.inorderSuccessor.right'
             n.inorderSuccessor.color' = n.color
-        } else {
-            n.inorderSuccessor.right' = n.right
+        }
+
+        -- after replacing, n is a black leaf
+        {
+            n.inorderSuccessor = n.right
+            no n.inorderSuccessor.right
+            n.inorderSuccessor.color = Black
+        } => {
+            n.inorderSuccessor.right' = n
             n.inorderSuccessor.color' = n.color
+
+            n.color' = Black
+            n.type' = DoubleBlack
+            n.nullNode' = IsNull
         }
 
-        n.left != n.inorderSuccessor => {
-            n.left.color' = n.left.color
-        }
-        n.right != n.inorderSuccessor => {
-            n.right.color' = n.right.color
-        }
-
-        n.color = Black => {
-            some db : Node | {
-                db.type = DoubleBlack
-                db.nullNode = IsNull
-                db not in treeNode
-
-                no db.left'
-                no db.right'
-
-                -- CHANGED!! added if line below
-                n.inorderSuccessor.parent != n => {
-                    n.inorderSuccessor.parent.left = n.inorderSuccessor => {
-                        n.inorderSuccessor.parent.left' = db
-                        n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
-                    } else {
-                        n.inorderSuccessor.parent.right' = db
-                        n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
-                    }
-                } else {
-                    n.inorderSuccessor.parent.left = n.inorderSuccessor => {
-                        n.inorderSuccessor.left' = db
-                        n.inorderSuccessor.right' = n.right
-                    } else {
-                        n.inorderSuccessor.right' = db
-                        n.inorderSuccessor.left' = n.left
-                    }
-                }
+        -- after replacing, n has one right child
+        {
+            n.inorderSuccessor = n.right
+            some n.inorderSuccessor.right
+        } => {
+            n.inorderSuccessor.color = Black and n.inorderSuccessor.right.color = Black => {
+                n.inorderSuccessor.right.type' = DoubleBlack
+                no n.inorderSuccessor.right.nullNode'
             }
-        } else {
+            n.inorderSuccessor.right.color' = Black
+
+            n.inorderSuccessor.right' = n.inorderSuccessor.right
+            n.inorderSuccessor.color' = n.color
+        }
+
+        -- After replacing, n is a Red leaf
+        {
+            n.inorderSuccessor != n.right
+            no n.inorderSuccessor.right
+            n.inorderSuccessor.color = Red
+        } => {
+            n.inorderSuccessor.right' = n.right
+            n.inorderSuccessor.color' = n.color
+
             n.inorderSuccessor.parent.left = n.inorderSuccessor => {
                 no n.inorderSuccessor.parent.left'
                 n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
@@ -162,8 +177,58 @@ pred delete[n : Node] {
                 no n.inorderSuccessor.parent.right'
                 n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
             }
+            
+            n.right.color' = n.right.color
         }
-        n.inorderSuccessor.parent.color' = n.inorderSuccessor.parent.color
+
+        -- After replacing, n is Black leaf
+        {
+            n.inorderSuccessor != n.right
+            no n.inorderSuccessor.right
+            n.inorderSuccessor.color = Black
+        } => {
+            n.inorderSuccessor.right' = n.right
+            n.inorderSuccessor.color' = n.color
+
+            n.inorderSuccessor.parent.left = n.inorderSuccessor => {
+                n.inorderSuccessor.parent.left' = n
+                n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+            } else {
+                n.inorderSuccessor.parent.right' = n
+                n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+            }
+
+            n.color' = Black
+            n.type' = DoubleBlack
+            n.nullNode' = IsNull
+
+            n.right.color' = n.right.color
+        }
+
+        -- After replacing, n has one right child
+        {
+            n.inorderSuccessor != n.right
+            some n.inorderSuccessor.right
+        } => {
+            n.inorderSuccessor.color = Black and n.inorderSuccessor.right.color = Black => {
+                n.inorderSuccessor.right.type' = DoubleBlack
+                no n.inorderSuccessor.right.nullNode'
+            }
+            n.inorderSuccessor.right.color' = Black
+
+            n.inorderSuccessor.right' = n.right
+            n.inorderSuccessor.color' = n.color
+
+            n.inorderSuccessor.parent.left = n.inorderSuccessor => {
+                n.inorderSuccessor.parent.left' = n.inorderSuccessor.right
+                n.inorderSuccessor.parent.right' = n.inorderSuccessor.parent.right
+            } else {
+                n.inorderSuccessor.parent.right' = n.inorderSuccessor.right
+                n.inorderSuccessor.parent.left' = n.inorderSuccessor.parent.left
+            }
+
+            n.right.color' = n.right.color
+        }
     }
 
     // all o : Node | (o not in (n + n.parent + n.inorderSuccessor + n.inorderSuccessor.parent)) => {
@@ -173,12 +238,19 @@ pred delete[n : Node] {
     }
 
     // CHANGED -- added subtracting set of color'
-    -- Color stays the same except the left and right
-    color' - (n.left -> Color + n.right -> Color) = color - (n.left -> Color + n.right -> Color)
+    -- Color stays the same except the left, right, inorder successor (and its right)
+    color' - (n -> Color + n.left -> Color + n.right -> Color +
+              n.inorderSuccessor.right -> Color +
+              n.inorderSuccessor.left -> Color + 
+              n.inorderSuccessor -> Color)
+        = color - (n -> Color + n.left -> Color + n.right -> Color +
+                   n.inorderSuccessor.right -> Color +
+                   n.inorderSuccessor.left -> Color + 
+                   n.inorderSuccessor -> Color)
 
     -- Type and Null stay the same
-    type' = type
-    nullNode' = nullNode
+    type' - (n -> DoubleBlack) = type - (n -> DoubleBlack)
+    nullNode' - (n -> IsNull) = nullNode - (n -> IsNull)
 }
 
 // PREVENTS IMPORT ISSUES WITH IMPORTING INSERT AND DELETE SIMULTANEOUSLY
@@ -203,7 +275,7 @@ pred recolorDelete {
 
     -- Case 2: Node is root
     let db = dbNode, sib = dbNode.sibling | {
-        all o : Node | (o not in (db + db.parent + db.sibling + db.farNephew + db.nearNephew)) => {
+        all o : Node | (o not in (db + db.parent + db.sibling + db.farNephew + db.nearNephew + db.parent.parent)) => {
             o.left' = o.left
             o.right' = o.right
             o.color' = o.color
@@ -237,6 +309,12 @@ pred recolorDelete {
             db.parent.color' = db.parent.color
             db.parent.type' = db.parent.type
             db.parent.nullNode' = db.parent.nullNode
+
+            db.parent.parent.left' = db.parent.parent.left
+            db.parent.parent.right' = db.parent.parent.right
+            db.parent.parent.color' = db.parent.parent.color
+            db.parent.parent.type' = db.parent.parent.type
+            db.parent.parent.nullNode' = db.parent.parent.nullNode
 
             db.farNephew.left' = db.farNephew.left
             db.farNephew.right' = db.farNephew.right
@@ -307,10 +385,11 @@ pred recolorDelete {
                 sib.type' = sib.type
                 sib.nullNode' = sib.nullNode
 
-                // db.parent.left' = db.parent.left
-                // db.parent.right' = db.parent.right
-                db.parent.type' = db.parent.type
-                db.parent.nullNode' = db.parent.nullNode
+                db.parent.parent.left' = db.parent.parent.left
+                db.parent.parent.right' = db.parent.parent.right
+                db.parent.parent.color' = db.parent.parent.color
+                db.parent.parent.type' = db.parent.parent.type
+                db.parent.parent.nullNode' = db.parent.parent.nullNode
 
                 db.farNephew.left' = db.farNephew.left
                 db.farNephew.right' = db.farNephew.right
@@ -362,6 +441,9 @@ pred recolorDelete {
 
                 db.parent.type' = db.parent.type
                 db.parent.nullNode' = db.parent.nullNode
+
+                db.parent.parent.type' = db.parent.parent.type
+                db.parent.parent.nullNode' = db.parent.parent.nullNode
 
                 db.farNephew.left' = db.farNephew.left
                 db.farNephew.right' = db.farNephew.right
@@ -424,11 +506,17 @@ pred recolorDelete {
                 db.type' = db.type
                 db.nullNode' = db.nullNode
 
-                db.parent.left' = db.parent.left
-                db.parent.right' = db.parent.right
-                db.parent.color' = db.parent.color
+                // db.parent.left' = db.parent.left
+                // db.parent.right' = db.parent.right
+                // db.parent.color' = db.parent.color
                 db.parent.type' = db.parent.type
                 db.parent.nullNode' = db.parent.nullNode
+
+                db.parent.parent.left' = db.parent.parent.left
+                db.parent.parent.right' = db.parent.parent.right
+                db.parent.parent.color' = db.parent.parent.color
+                db.parent.parent.type' = db.parent.parent.type
+                db.parent.parent.nullNode' = db.parent.parent.nullNode
 
                 db.farNephew.color' = db.farNephew.color
                 db.farNephew.type' = db.farNephew.type
@@ -490,6 +578,9 @@ pred recolorDelete {
                 db.parent.type' = db.parent.type
                 db.parent.nullNode' = db.parent.nullNode
 
+                db.parent.parent.type' = db.parent.parent.type
+                db.parent.parent.nullNode' = db.parent.parent.nullNode
+
                 db.farNephew.left' = db.farNephew.left
                 db.farNephew.right' = db.farNephew.right
                 db.farNephew.type' = db.farNephew.type
@@ -532,4 +623,17 @@ pred traces_del {
     }
 }
 
-run { traces_del } for exactly 6 Node
+run { 
+    init
+    some n1, n2, n3, n4, n5, n6, n7, n8 : Node | {
+        value = n1 -> 0 + n2-> -4 + n3 -> 4 + n4->-6 + n5->-2 + n6->2 + n7->6 + n8 -> 3
+
+        left = n1 -> n2 + n2->n4 + n3->n6
+        right = n1 -> n3 + n2->n5 + n3-> n7 + n6->n8
+
+        color = (n1 + n2 + n6 + n7) -> Black + (n3 + n4 + n5 + n8) -> Red
+
+        delete[n3]
+    }
+    traces_del
+} for 10 Node
