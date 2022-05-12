@@ -10,6 +10,7 @@ const BLACK = "#000000";
 const h_margin = 500;
 var radius = 40;
 const numInst = instances.length
+const w = 550
 
 function instanceToTree(inst) {
     /* Turn an instance into variables usable to graph a tree.
@@ -273,7 +274,7 @@ function bottomGraph() {
         const sy = 550
 
         // set xmin and xmax based on instance number and number of instances
-        treeGraph(instances[j], sx, sy, 100, 1 / 3, j / numInst * 550 + radius, (j + 1) / numInst * 550 + radius - 50);
+        treeGraph(instances[j], sx, sy, 100, 1 / 3, j / numInst * w + radius, (j + 1) / numInst * w + radius - 50);
     }
 }
 
@@ -466,7 +467,7 @@ function graphButtons(inst) {
 
 function graph(inst) {
     /* Graph all components of vizualizer */
-    treeGraph(inst, 400, 150, 100, 1, 50, 500)
+    treeGraph(inst, 400, 150, 100, 1, 50, w-50)
     graphButtons(inst)
     bottomGraph()
 }
